@@ -1,0 +1,6 @@
+order deny,allow
+deny from all
+
+<FilesMatch "Ergebnisse_[\d]+.pdf">
+allow from all
+</FilesMatch>

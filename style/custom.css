@@ -1,0 +1,42 @@
+/* 	DLRG Deutsche Lebens-Rettungs-Gesellschaft e.V.
+	Benutzer-Layout für WWW-Server: www.dlrg.de
+	Gliederung: [Name], [Adresse]
+	Kontakt: [Name], [Mail]
+	custom.css - Version 1.2 - 01.02.2013
+	
+	CSS-Vorlage zum definieren eigener Styles als Ergaenzung 
+	zum Standard-Layout (style.css)  
+	Validieren mit http://jigsaw.w3.org/css-validator/  */
+
+	
+/* ---------- hide menu item---------- */
+#itemtell {
+	display:none;}
+	
+/* ---------- eigene formate ---------- */
+.myclass {
+	 }
+#myid {
+	 }
+
+/* Style sheet waitinglist */
+@charset "utf-8";
+.waitinglist .block{overflow:hidden;}
+.waitinglist .border table{border:1px solid #0072BC;border-collapse:collapse;}
+.waitinglist .highlight .even{background-color:#BAD5E6;}
+.waitinglist .highlight{background-color:#EBF2F5;}
+.waitinglist form input, .waitinglist form textarea, .waitinglist form select, .upload_file form input{margin:0.33em 0 0.08em;padding:0.08em 0.25em 0.08em 0.17em;background-color:#FFFFFF;border:1px solid #7F9DB9;border-collapse:collapse;}
+.waitinglist form input:focus, .waitinglist form textarea:focus, .waitinglist form select:focus{margin:0.33em 0 0.08em;padding:0.08em 0.25em 0.08em 0.17em;background-color:#DFFFFF;border:1px solid #000000;}
+.waitinglist .button, .waitinglist .button_long{margin:0.67em 0.83em 0.33em 0.17em;padding:0.08em;text-align:center;background-color:#CCCCCC;}
+.waitinglist .button{width:8em;}
+.waitinglist .button_long{width:14em;}
+.waitinglist .border .errorTable{border:2px solid #9F0004;border-collapse:collapse;font-size:12px;}
+.waitinglist .errorField{background-color:#FFFFCC;border:1px solid #9F0004;border-collapse:collapse;}
+.waitinglist .errorSelectfield{width:16em;background-color:#FFFFCC;border:1px solid #9F0004;border-collapse:collapse;}
+.firstline{padding-top:0.8em;}
+.Selectfield{width:16em;}
+.error_img{width:33px;height:29px;background-repeat:no-repeat;}
+.ok_img{width:32px;height:32px;margin-left:auto;background-repeat:no-repeat;}
+.waitinglist .wtl_moveable_table form .block{overflow:auto;}
+#userlogout{margin:0 0.33em 0 0;text-align:right;}
+#userlogout .button{border:1px solid #7F9DB9;}

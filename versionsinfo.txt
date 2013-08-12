@@ -1,0 +1,48 @@
+=======================================
+Revisions of Automatic Waitinglist
+=======================================
+
+version 1.3.1 (2013-08-12)
+---------------------------------------
+- bug with delete members fixed
+- some bugs in content fixed
+- some writing bugs fixed
+- waitingtime girder with % and only one color
+  add text for waitingtime "is not the real time"
+
+
+version 1.3.0 (2013-05-03)
+---------------------------------------
+- send registermail second time from view set by admin added
+- function send_mail with return
+- bug links in entry mails not clicklinks fixed
+- fixed writing bug in f_login
+
+
+version 1.2.0 (2013-02-19)
+---------------------------------------
+- Import / Export members as CSV
+- file functions as own function file
+- fields for up/download in DB tables wtl_lists & wtl_user added
+- some bugs fixed
+
+
+version 1.1.0 (2013-02-13)
+---------------------------------------
+- own login system for script
+- view all detail data from members
+- registerdate can be changed by user
+- some bugs fixed
+Exampledata:   sa.muster  PW: sa.muster
+                m.muster  PW:  m.muster
+
+
+version 1.0.1 (2012-05-29)
+---------------------------------------
+- some bugs fixed
+- multiline captions for input- and selectfields 
+
+
+version 1.0.0 (2012-05-06)
+---------------------------------------
+- script approved
