@@ -1,4 +1,2 @@
-Farbbalken des Wartestatus konfigurierbar machen, auch abschaltbar und durch Text ersetzbar
-Link der Aufnahmerückmeldungen auch sichtbar wenn eingeloggt
-Auswahlkriterien der Aufnahme mitloggen und bei Aufnahmestatistik anzeigbar machen
+﻿Auswahlkriterien der Aufnahme mitloggen und bei Aufnahmestatistik anzeigbar machen
 Felderfunktion aus Feedbackscript übernehmen

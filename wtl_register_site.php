@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.2.2
- * @date - time  31.07.2013 - 19:00
+ * @WTL version  1.2.3
+ * @date - time  16.09.2013 - 19:00
  * @copyright    Marc Busse 2012-2016
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -99,6 +99,7 @@
             // bei User Login
             if( ($authority === TRUE) && (($data == 'input') || ($data == 'view')) )
             {
+                $readonly = '';
                 echo "
                     <tr>
                         <td>Eintragender :</td>
@@ -121,13 +122,13 @@
                     </tr>
                 ";
             }
-            if( ($registerId_OK === TRUE) && ($NotView === TRUE) )
+            if( ($registerId_OK === TRUE) && ($girder == '1') )
             {
                 echo "
                     <tr>
                         <td>Wartezeit :</td>
                         <td colspan='2'>".progressGirder($girderType,220,$waitingNo,$waitingPos,0,'1px solid #7F9DB9',$girderColors)."
-                            <div><b>Die tatsächliche Watezeit kann länger sein!</b></div></td>
+                            <div><b>Dies besagt nichts über die tatsächliche Watezeit!</b></div></td>
                     </tr>
                 ";
             }

@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.2
- * @date - time  01.02.2013 - 19:00
+ * @WTL version  1.2.3
+ * @date - time  16.09.2013 - 19:00
  * @copyright    Marc Busse 2012-2016
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -44,6 +44,8 @@
     $authorityView = FALSE;
     $readonly = " readonly='readonly' ";
     $username = $_SESSION['intern']['realname'];
+    $girderColors = array('000-100'=>'#F0F000');
+    $girderType = 1;
 
     // Benutzerberechtigungen
     $authorityView = checkAuthority($dbId,'wtl_user','viewAuth',$listID);
@@ -56,6 +58,8 @@
         $listName = $daten->setName;
         $inputfields = unserialize($daten->inputfields);
         $selectfields = unserialize($daten->selectfields);
+        $headerTextDataEdit = html_entity_decode($daten->headerTextDataEdit,ENT_QUOTES,'UTF-8');
+        $girder = $daten->girder;
     }
     // class aller Eingabefelder
     foreach( $inputfields as $id )
@@ -84,6 +88,18 @@
             {
                 while( $daten = mysql_fetch_object($result) )
                 {
+                    // Anzahl Wartender errechnen
+                    $resultNo = mysql_query("SELECT COUNT(*) FROM wtl_members WHERE listId = '".$listID."' AND entryId = '' AND deleted != '1'",$dbId);
+                    $waitingNoArray = mysql_fetch_row($resultNo);
+                    $waitingNo = $waitingNoArray[0];
+                    // Platz errechnen
+                    $SQL_Befehl_Read = "SELECT (SELECT COUNT(*) FROM wtl_members b WHERE (b.tstamp <= a.tstamp AND b.id < a.id)
+                        AND listId = '".$listID."' AND entryId = '' AND deleted != '1' ORDER BY b.tstamp DESC, b.id DESC) + 1 AS position FROM wtl_members a
+                        WHERE a.id = '".$memberID."' AND a.listId = '".$listID."' AND a.entryId = '' AND deleted != '1'";
+                    $resultPos = mysql_query($SQL_Befehl_Read, $dbId);
+                    $waitingPosArray = mysql_fetch_row($resultPos);
+                    $waitingPos = $waitingPosArray[0];
+                    // eingegebene Daten
                     $_POST['firstname'] = $daten->firstname;
                     $_POST['lastname'] = $daten->lastname;
                     $_POST['dateOfBirth'] = date('d.m.Y', $daten->dateOfBirth);
@@ -101,6 +117,12 @@
                     $authority = FALSE;
                     $location_back = "'history.back();'";
                 }
+                // headertext bei daten edit (wenn nicht leer)
+                if( !empty($headerTextDataEdit) )
+                {
+                    $message .= "<p>".nl2br($headerTextDataEdit)."</p>";
+                }
+                $message .= "<p></p>";
                 include_once('wtl_register_site.php');
                 echo "
                     <form name='wtl_view_member_form' method='post' action='".htmlspecialchars($_SERVER['REQUEST_URI'])."'>

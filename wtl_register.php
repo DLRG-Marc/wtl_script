@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.2.2
- * @date - time  31.07.2013 - 19:00
+ * @WTL version  1.2.3
+ * @date - time  16.09.2013 - 19:00
  * @copyright    Marc Busse 2012-2016
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -43,7 +43,6 @@
     $authority = FALSE;
     $readonly = '';
     $username = $_SESSION['intern']['realname'];
-    //$girderColors = array('000-025'=>'#00A700', '026-075'=>'#F0F000', '076-100'=>'#F00000');
     $girderColors = array('000-100'=>'#F0F000');
     $girderType = 1;
     $fieldClass = array('registerId'=>'Field','registerDate'=>'Field','firstname'=>'Field','lastname'=>'Field','dateOfBirth'=>'Field',
@@ -90,6 +89,8 @@
         $registerMail = html_entity_decode($daten->registerMail,ENT_QUOTES,'UTF-8');
         $headerText = html_entity_decode($daten->headerText,ENT_QUOTES,'UTF-8');
         $footerText = html_entity_decode($daten->footerText,ENT_QUOTES,'UTF-8');
+        $headerTextDataEdit = html_entity_decode($daten->headerTextDataEdit,ENT_QUOTES,'UTF-8');
+        $girder = $daten->girder;
     }
     $_POST['ageMin'] = $ageLimitArray[0];
     $_POST['ageMax'] = $ageLimitArray[1];
@@ -503,6 +504,11 @@
             if( !empty($headerText) && ($data == 'input') )
             {
                 $message .= "<p>".nl2br($headerText)."</p>";
+            }
+            // headertext bei daten edit (wenn nicht leer)
+            if( !empty($headerTextDataEdit) && ($data == 'edit') )
+            {
+                $message .= "<p>".nl2br($headerTextDataEdit)."</p>";
             }
         }
         $message .= "<p></p>";

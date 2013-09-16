@@ -66,6 +66,8 @@ CREATE TABLE IF NOT EXISTS `wtl_lists` (
   `selectfields` text NOT NULL,
   `registerMail` mediumtext NOT NULL,
   `ageLimit` text NOT NULL,
+  `headerTextDataEdit` mediumtext NOT NULL,
+  `girder` char(1) NOT NULL DEFAULT '',
   `entryMail` mediumtext NOT NULL,
   `entryLimit` int(10) unsigned NOT NULL DEFAULT '20',
   `connectFields` text NOT NULL,
@@ -114,7 +116,7 @@ CREATE TABLE IF NOT EXISTS `wtl_members` (
   `confirmTstamp` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `registerId` (`registerId`),
-  UNIQUE KEY `person` (`firstname`,`lastname`,`dateOfBirth`,`deleted`)
+  UNIQUE KEY `person` (`listId`,`firstname`,`lastname`,`dateOfBirth`,`deleted`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------

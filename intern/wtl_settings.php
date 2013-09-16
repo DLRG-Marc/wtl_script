@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.2
- * @date - time  01.02.2013 - 19:00
+ * @WTL version  1.2.3
+ * @date - time  16.09.2013 - 19:00
  * @copyright    Marc Busse 2012-2016
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -41,7 +41,8 @@
     $username = $_SESSION['intern']['realname'];
     $fieldClass = array('published'=>'Field','dlrgName'=>'Field','mailadress'=>'Field','headerText'=>'Field','footerText'=>'Field','registerMail'=>'Field',
         'inputfields'=>'Selectfield','selectfields'=>'Selectfield','entryMail'=>'Field','entryLimit'=>'Field','selectAge'=>'Selectfield','ageLimit'=>'Field',
-        'viewRegister'=>'Selectfield','viewEntry'=>'Selectfield','viewStatistic'=>'Selectfield','viewStatDetails'=>'Selectfield','viewDownloads'=>'Selectfield');
+        'headerTextDataEdit'=>'Field','viewRegister'=>'Selectfield','viewEntry'=>'Selectfield','viewStatistic'=>'Selectfield','viewStatDetails'=>'Selectfield',
+        'viewDownloads'=>'Selectfield');
 
     // Benutzerberechtigungen
     $authority = checkAuthority($dbId,'wtl_user','admin',$setID);
@@ -218,7 +219,8 @@
                 $SQL_Befehl_Write = "UPDATE wtl_lists SET published = '".$MYSQL['published']."', dlrgName = '".$MYSQL['dlrgName']."',
                     mailadress = '".$MYSQL['mailadress']."', headerText = '".$MYSQL['headerText']."', footerText = '".$MYSQL['footerText']."',
                     inputfields = '".$MYSQL['inputfields']."', selectfields = '".$MYSQL['selectfields']."', registerMail = '".$MYSQL['registerMail']."',
-                    ageLimit = '".$MYSQL['ageLimit']."', lastEditor = '".$username."' WHERE id = '".$setID."'";
+                    ageLimit = '".$MYSQL['ageLimit']."', headerTextDataEdit = '".$MYSQL['headerTextDataEdit']."', girder = '".$MYSQL['girder']."',
+                    lastEditor = '".$username."' WHERE id = '".$setID."'";
                 $result = mysql_query($SQL_Befehl_Write,$dbId);
                 if( (mysql_affected_rows($dbId) == 1) && ($result === TRUE) )
                 {
@@ -293,6 +295,8 @@
                 $_POST['inputfields'] = $daten->inputfields;
                 $_POST['selectfields'] = $daten->selectfields;
                 $ageLimitArray = unserialize($daten->ageLimit);
+                $_POST['headerTextDataEdit'] = html_entity_decode($daten->headerTextDataEdit,ENT_QUOTES,'UTF-8');
+                $_POST['girder'] = $daten->girder;
                 $_POST['registerMail'] = html_entity_decode($daten->registerMail,ENT_QUOTES,'UTF-8');
                 $_POST['entryMail'] = html_entity_decode($daten->entryMail,ENT_QUOTES,'UTF-8');
                 $_POST['entryLimit'] = $daten->entryLimit;
@@ -409,6 +413,16 @@
                             <td>Höchstalter :</td>
                             <td colspan='2'><input class='".$fieldClass['ageMax']."' type='text' name='ageLimit[]' size='5'
                                 title='".$errorTitle['ageMax']."' value='".$_POST['ageMax']."'/></td>
+                        </tr>
+                        <tr>
+                            <td>Header-Text bei Daten ändern<br/>(optional) :</td>
+                            <td colspan='2'><textarea class='".$fieldClass['headerTextDataEdit']."' name='headerTextDataEdit' cols='34' rows='5'>"
+                                .$_POST['headerTextDataEdit']."</textarea></td>
+                        </tr>
+                        <tr>
+                            <td>Anzeigebalken :</td>
+                            <td><input type='checkbox' name='girder'"; if($_POST['girder']=='1'){echo " checked='checked'";}
+                                echo" value='1'/></td>
                         </tr>
                         <tr>
                             <td><input name='setName' type='hidden' value='".$_POST['setName']."'/></td>

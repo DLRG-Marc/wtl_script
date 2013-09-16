@@ -2,6 +2,14 @@
 Revisions of Automatic Waitinglist
 =======================================
 
+version 1.4.0 (2013-09-16)
+---------------------------------------
+- header text for data edit configurable
+- girder in data edit now configurable
+- user with entry rights now can edit all fields from members
+- only members in the same list have to be unique
+
+
 version 1.3.1 (2013-08-12)
 ---------------------------------------
 - bug with delete members fixed
