@@ -2,6 +2,11 @@
 Revisions of Automatic Waitinglist
 =======================================
 
+version 1.4.1(2013-09-25)
+---------------------------------------
+- wtl_globals_local for development added
+
+
 version 1.4.0 (2013-09-16)
 ---------------------------------------
 - header text for data edit configurable

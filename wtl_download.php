@@ -26,7 +26,14 @@
     header('content-type: text/html; charset=utf-8');
 
     // Settings
-    require_once('wtl_globals.php');
+    if( file_exists('wtl_globals_local.php') )
+    {
+        require_once('wtl_globals_local.php');
+    }
+    else
+    {
+        require_once('wtl_globals.php');
+    }
     require_once('f_global.php');
     require_once('f_sets.php');
     require_once('f_files.php');

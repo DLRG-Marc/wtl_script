@@ -24,7 +24,14 @@
 
 
         error_reporting(0);
-        require_once('wtl_globals.php');
+        if( file_exists('wtl_globals_local.php') )
+        {
+            require_once('wtl_globals_local.php');
+        }
+        else
+        {
+            require_once('wtl_globals.php');
+        }
         require_once('f_global.php');
         require_once('f_login.php');
         $dbId = connectDatebase();
@@ -39,7 +46,7 @@
         session_name('WTLSSID'); session_start();
         if($_SESSION['intern']['loggedIn']===TRUE){ checkAutologout($dbId,'wtl_user',$_SESSION['intern']['userId']); }
         if(($_DLRG_DOC['access']=="") && ($_DLRG_DOC['session']=='intern')){ if($_SESSION['intern']['loggedIn']===TRUE){
-           $_DLRG_SYS['get']='wtl_view'; include_once($_DLRG_PATH['content'].$_DLRG_SYS['get'].".inc"); $_DLRG_MENU=control_menu($_DLRG_DOC['id'], $_DLRG_MENU); } }
+            $_DLRG_SYS['get']='wtl_view'; include_once($_DLRG_PATH['content'].$_DLRG_SYS['get'].".inc"); $_DLRG_MENU=control_menu($_DLRG_DOC['id'], $_DLRG_MENU); } }
         if(($_DLRG_DOC['access']!="") && ($_DLRG_DOC['session']=='intern')){ if($_SESSION['intern']['loggedIn']!==TRUE){
             $_DLRG_SYS['get']='wtl_intern'; include_once($_DLRG_PATH['content'].$_DLRG_SYS['get'].".inc"); } }
         if($_GET['login']=='logout'){ $_SESSION = array(); session_destroy();
