@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.2
- * @date - time  01.02.2013 - 19:00
+ * @WTL version  1.2.5
+ * @date - time  27.09.2013 - 19:00
  * @copyright    Marc Busse 2012-2016
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -157,11 +157,6 @@
                     $message = "<p><b>Die Einstellungen des Administrators '".$_POST['setName']."' wurden geändert !</b></p>
                         <p><a href='".$script_url."'>zurück zu den Einstellungen.</a></p>";
                     // ggf. Firstinstall zurücksetzen
-                    if( substr(decoct(fileperms($GLOBALS['SYSTEM_SETTINGS']['GLOBAL_PATH'].'/wtl_globals.php')),2) != '0666' )
-                    {
-                        $message = "<p><b>ACHTUNG:<br/>Die Datei wtl_globals.php braucht Schreibrechte, bitte Rechte auf 0666 ändern!</b></p>
-                            <p><a href='".$script_url."'>zurück zu den Einstellungen.</a></p>";
-                    }
                     $result = mysql_query("SELECT count(id) FROM wtl_user WHERE userpw = '' AND id = '".$setID."'", $dbId);
                     $adminArray = mysql_fetch_row($result);
                     if( $adminArray[0] == '1' )

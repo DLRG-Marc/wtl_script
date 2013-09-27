@@ -2,7 +2,12 @@
 Revisions of Automatic Waitinglist
 =======================================
 
-version 1.4.1(2013-09-25)
+version 1.4.2 (2013-09-27)
+---------------------------------------
+- bug by install tables fixed
+
+
+version 1.4.1 (2013-09-25)
 ---------------------------------------
 - wtl_globals_local for development added
 

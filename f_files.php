@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.2
- * @date - time  01.02.2013 - 19:00
+ * @WTL version  1.2.5
+ * @date - time  27.09.2013 - 19:00
  * @copyright    Marc Busse 2012-2016
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -31,6 +31,27 @@ function convertFileToUTF8($file)
     $handle = fopen($file,"r+");
     fwrite($handle,utf8_encode(file_get_contents($file)));
     fclose($handle);
+}
+
+//@$file string
+//@return boolean
+function makeSQLtableFormSQLdata($dbId,$file)
+{
+    $result = FALSE;
+    $sqlStr = file_get_contents($file);
+    $sqlStr = preg_replace('%/\*(.*)\*/%Us','',$sqlStr);
+    $sqlStr = preg_replace('%^--(.*)\n%mU','',$sqlStr);
+    $sqlStr = preg_replace('%^$\n%mU','',$sqlStr);
+    $sqlStr = str_replace(chr(13),'',$sqlStr);
+    $sql = explode(';'.chr(10),$sqlStr);
+    foreach($sql as $sqlrow)
+    {
+        if( mysql_query($sqlrow,$dbId) )
+        {
+            $result = TRUE;
+        }
+    }
+    return $result;
 }
 
 //@$dbId int

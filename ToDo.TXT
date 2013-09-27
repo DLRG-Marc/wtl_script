@@ -1,2 +1,0 @@
-﻿Auswahlkriterien der Aufnahme mitloggen und bei Aufnahmestatistik anzeigbar machen
-Felderfunktion aus Feedbackscript übernehmen
