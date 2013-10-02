@@ -2,6 +2,13 @@
 Revisions of Automatic Waitinglist
 =======================================
 
+version 1.4.3 (3013-10-01)
+---------------------------------------
+- edit GNU Header in files
+- set version to 1.4.3 at all files
+- split folder "bild" to "graphic" and "images"
+
+
 version 1.4.2 (2013-09-27)
 ---------------------------------------
 - bug by install tables fixed

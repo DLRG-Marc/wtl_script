@@ -12,8 +12,8 @@
  $_DLRG_PATH = array (
          "content"=>"content/",
          "style"=>"style/",
-         "image"=>"bild/",
-         "grafik"=>"grafik/" );
+         "image"=>"images/",
+         "grafik"=>"graphic/" );
  $_DLRG_INC = array (
          "start"=>"index",
          "search"=>"suche",

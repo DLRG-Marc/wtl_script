@@ -1,8 +1,8 @@
 <?php
 
 /**
- * Automaticly Waitinglist WTL
- * Copyright (C) 2012-2016 Marc Busse
+ * Automatic Waitinglist WTL
+ * Copyright (C) 2012-2020 Marc Busse
  *
  * This script is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License 
@@ -15,9 +15,9 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.2
- * @date - time  01.02.2013 - 19:00
- * @copyright    Marc Busse 2012-2016
+ * @WTL version  1.4.3
+ * @date - time  01.10.2013 - 19:00
+ * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
  */
@@ -32,7 +32,7 @@ $GLOBALS['DB_SETTINGS']['PASSWORD'] = '';   // Passwort der Datenbank
 
 // globale Scriptdaten
 $GLOBALS['SYSTEM_SETTINGS']['GLOBAL_PATH'] = dirname(__FILE__);    // nicht ändern!!
-$GLOBALS['SYSTEM_SETTINGS']['GRAPHIC_PATH'] = 'bild/';             // muss normalerweise nicht geändert werden
+$GLOBALS['SYSTEM_SETTINGS']['GRAPHIC_PATH'] = 'graphic/';          // muss normalerweise nicht geändert werden
 $GLOBALS['SYSTEM_SETTINGS']['FILE_PATH'] = 'files/';               // muss normalerweise nicht geändert werden
 $GLOBALS['SYSTEM_SETTINGS']['CONTENT_PATH'] = 'content/';          // muss normalerweise nicht geändert werden
 $GLOBALS['SYSTEM_SETTINGS']['TEMP_PATH'] = 'temp/';                // muss normalerweise nicht geändert werden
