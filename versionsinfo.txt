@@ -2,10 +2,15 @@
 Revisions of Automatic Waitinglist
 =======================================
 
-version 1.4.3 (3013-10-01)
+version 1.5.0 (2013-10-02)
+---------------------------------------
+- automatic close register function added
+
+
+version 1.5.0 (3013-10-01)
 ---------------------------------------
 - edit GNU Header in files
-- set version to 1.4.3 at all files
+- set version to 1.5.0 at all files
 - split folder "bild" to "graphic" and "images"
 
 

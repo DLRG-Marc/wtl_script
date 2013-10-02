@@ -15,7 +15,7 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.4.3
+ * @WTL version  1.5.0
  * @date - time  01.10.2013 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
@@ -91,6 +91,10 @@
         $footerText = html_entity_decode($daten->footerText,ENT_QUOTES,'UTF-8');
         $headerTextDataEdit = html_entity_decode($daten->headerTextDataEdit,ENT_QUOTES,'UTF-8');
         $girder = $daten->girder;
+        $autoclose = $daten->autoclose;
+        $closeDate = $daten->closeDate;
+        $registerLimit = $daten->registerLimit;
+        $closeText = html_entity_decode($daten->closeText,ENT_QUOTES,'UTF-8');
     }
     $_POST['ageMin'] = $ageLimitArray[0];
     $_POST['ageMax'] = $ageLimitArray[1];
@@ -472,6 +476,30 @@
                 $displayMessage = TRUE;
                 $message = "<p><b>Das Bestätigen der Aufnahme ist fehlgeschlagen !<br/>Bitte wende Dich bitte an das
                     <a href='mailto:".$mailadress."'>Aufnahmeteam ".$listName."</a>.</p>";
+            }
+        }
+
+        // auf Anmeldung geschlossen prüfen
+        if( ($autoclose == '1') && ($data != 'edit') )
+        {
+            $resultCount = mysql_query("SELECT COUNT(*) FROM wtl_members WHERE listId = '".$listID."' AND entryId = '' AND deleted != '1'",$dbId);
+            $registerCount = mysql_fetch_row($resultCount);
+            if( (time() >= $closeDate) && ($closeDate != 0) )
+            {
+                $close = TRUE;
+                $displayMessage = TRUE;
+                $message = "<p><b>Diese Warteliste ist aufgrund eines Ablaufdatums seit dem ".date('d.m.Y',$closeDate)." geschlossen!</b></p>";
+            }
+            if( $registerCount[0] >= $registerLimit )
+            {
+                $close = TRUE;
+                $displayMessage = TRUE;
+                $message = "<p><b>Diese Warteliste ist aufgrund des starken Andranges vorübergehend geschlossen!</b><br>
+                    Bitte versuche es zu einem spätern Zeitpunkt noch einmal.</p>";
+            }
+            if( (!empty($closeText)) && ($close === TRUE) )
+            {
+                $message .= "<p>".nl2br($closeText)."</p>";
             }
         }
 

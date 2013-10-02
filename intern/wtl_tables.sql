@@ -13,7 +13,7 @@
 /* General Public License for more details */
 /* at <http://www.gnu.org/licenses/>. */
 /**/
-/* @WTL version  1.4.3 */
+/* @WTL version  1.5.0 */
 /* @date - time  01.10.2013 - 19:00 */
 /* @copyright    Marc Busse 2012-2020 */
 /* @author       Marc Busse <http://www.eutin.dlrg.de> */
@@ -82,6 +82,10 @@ CREATE TABLE IF NOT EXISTS `wtl_lists` (
   `ageLimit` text NOT NULL,
   `headerTextDataEdit` mediumtext NOT NULL,
   `girder` char(1) NOT NULL DEFAULT '',
+  `autoclose` char(1) NOT NULL DEFAULT '',
+  `closeDate` int(11) NOT NULL DEFAULT '0',
+  `registerLimit` varchar(32) NOT NULL DEFAULT '',
+  `closeText` mediumtext NOT NULL,
   `entryMail` mediumtext NOT NULL,
   `entryLimit` int(10) unsigned NOT NULL DEFAULT '20',
   `connectFields` text NOT NULL,

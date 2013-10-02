@@ -15,7 +15,7 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.4.3
+ * @WTL version  1.5.0
  * @date - time  01.10.2013 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
@@ -41,8 +41,8 @@
     $username = $_SESSION['intern']['realname'];
     $fieldClass = array('published'=>'Field','dlrgName'=>'Field','mailadress'=>'Field','headerText'=>'Field','footerText'=>'Field','registerMail'=>'Field',
         'inputfields'=>'Selectfield','selectfields'=>'Selectfield','entryMail'=>'Field','entryLimit'=>'Field','selectAge'=>'Selectfield','ageLimit'=>'Field',
-        'headerTextDataEdit'=>'Field','viewRegister'=>'Selectfield','viewEntry'=>'Selectfield','viewStatistic'=>'Selectfield','viewStatDetails'=>'Selectfield',
-        'viewDownloads'=>'Selectfield');
+        'headerTextDataEdit'=>'Field','closeDate'=>'Field','registerLimit'=>'Field','closeText'=>'Field','viewRegister'=>'Selectfield','viewEntry'=>'Selectfield',
+        'viewStatistic'=>'Selectfield','viewStatDetails'=>'Selectfield','viewDownloads'=>'Selectfield');
 
     // Benutzerberechtigungen
     $authority = checkAuthority($dbId,'wtl_user','admin',$setID);
@@ -143,6 +143,20 @@
                 $fieldClass['ageMax'] = 'errorField';
                 $errorTitle['ageMax'] = 'Das Höchstalter darf nicht kleiner als das Mindestalter sein!';
             }
+            if( ($_POST['autoclose'] == '1') && empty($_POST['closeDate']) && empty($_POST['registerLimit']) )
+            {
+                $input_OK = FALSE;
+                $fieldClass['closeDate'] = 'errorField';
+                $fieldClass['registerLimit'] = 'errorField';
+                $errorTitle['closeDate'] = 'Es muss entweder ein Datum oder eine Anmeldezahl als Schliesskriterium eingegeben werden!';
+                $errorTitle['registerLimit'] = 'Es muss entweder ein Datum oder eine Anmeldezahl als Schliesskriterium eingegeben werden!';
+            }
+            if( !empty($_POST['closeDate']) && (!check_date($_POST['closeDate'],'.')) )
+            { 
+                $input_OK = FALSE;
+                $fieldClass['closeDate'] = 'errorField';
+                $errorTitle['CloseDate'] = 'Ungültiges Datum!';
+            }
         }
         if( isset($_POST['sendInputEntry']) )
         {
@@ -216,11 +230,20 @@
             // wenn Eingaben OK
             if( $inputRegister_OK )
             {
+                if( $MYSQL['closeDate'] == '' )
+                {
+                    $closeDate = 0;
+                }
+                else
+                {
+                    $closeDate = strtotime(date_german2mysql($MYSQL['closeDate']));
+                }
                 $SQL_Befehl_Write = "UPDATE wtl_lists SET published = '".$MYSQL['published']."', dlrgName = '".$MYSQL['dlrgName']."',
                     mailadress = '".$MYSQL['mailadress']."', headerText = '".$MYSQL['headerText']."', footerText = '".$MYSQL['footerText']."',
                     inputfields = '".$MYSQL['inputfields']."', selectfields = '".$MYSQL['selectfields']."', registerMail = '".$MYSQL['registerMail']."',
                     ageLimit = '".$MYSQL['ageLimit']."', headerTextDataEdit = '".$MYSQL['headerTextDataEdit']."', girder = '".$MYSQL['girder']."',
-                    lastEditor = '".$username."' WHERE id = '".$setID."'";
+                    autoclose = '".$MYSQL['autoclose']."', closeDate = '".$closeDate."', registerLimit = '".$MYSQL['registerLimit']."',
+                    closeText = '".$MYSQL['closeText']."', lastEditor = '".$username."' WHERE id = '".$setID."'";
                 $result = mysql_query($SQL_Befehl_Write,$dbId);
                 if( (mysql_affected_rows($dbId) == 1) && ($result === TRUE) )
                 {
@@ -292,12 +315,16 @@
                 $_POST['mailadress'] = $daten->mailadress;
                 $_POST['headerText'] = html_entity_decode($daten->headerText,ENT_QUOTES,'UTF-8');
                 $_POST['footerText'] = html_entity_decode($daten->footerText,ENT_QUOTES,'UTF-8');
+                $_POST['registerMail'] = html_entity_decode($daten->registerMail,ENT_QUOTES,'UTF-8');
                 $_POST['inputfields'] = $daten->inputfields;
                 $_POST['selectfields'] = $daten->selectfields;
                 $ageLimitArray = unserialize($daten->ageLimit);
                 $_POST['headerTextDataEdit'] = html_entity_decode($daten->headerTextDataEdit,ENT_QUOTES,'UTF-8');
                 $_POST['girder'] = $daten->girder;
-                $_POST['registerMail'] = html_entity_decode($daten->registerMail,ENT_QUOTES,'UTF-8');
+                $_POST['autoclose'] = $daten->autoclose;
+                $_POST['closeDate'] = $daten->closeDate;
+                $_POST['registerLimit'] = $daten->registerLimit;
+                $_POST['closeText'] = html_entity_decode($daten->closeText,ENT_QUOTES,'UTF-8');
                 $_POST['entryMail'] = html_entity_decode($daten->entryMail,ENT_QUOTES,'UTF-8');
                 $_POST['entryLimit'] = $daten->entryLimit;
                 $connectFields = unserialize($daten->connectFields);
@@ -317,6 +344,14 @@
             }
             // Eingabefelder und Auswahlfelder zusammenführen für Ansicht
             $viewFieldArray = array_merge(unserialize($_POST['inputfields']),unserialize($_POST['selectfields']));
+            if( $_POST['closeDate'] == 0 )
+            {
+                $_POST['closeDate'] = '';
+            }
+            else
+            {
+                $_POST['closeDate'] = date('d.m.Y', $_POST['closeDate']);
+            }
         }
         else
         {
@@ -423,6 +458,26 @@
                             <td>Anzeigebalken :</td>
                             <td><input type='checkbox' name='girder'"; if($_POST['girder']=='1'){echo " checked='checked'";}
                                 echo" value='1'/></td>
+                        </tr>
+                        <tr>
+                            <td>Automatisches Schliessen<br>der Liste :</td>
+                            <td><input type='checkbox' name='autoclose'"; if($_POST['autoclose']=='1'){echo " checked='checked'";}
+                                echo" value='1'/></td>
+                        </tr>
+                        <tr>
+                            <td>bei Datum :</td>
+                            <td colspan='2'><input class='".$fieldClass['closeDate']."' type='text' name='closeDate' size='10'
+                                title='".$errorTitle['closeDate']."' value='".$_POST['closeDate']."'/></td>
+                        </tr>
+                        <tr>
+                            <td>bei max. Anzahl Wartender :</td>
+                            <td colspan='2'><input class='".$fieldClass['registerLimit']."' type='text' name='registerLimit' size='5'
+                                title='".$errorTitle['registerLimit']."' value='".$_POST['registerLimit']."'/></td>
+                        </tr>
+                        <tr>
+                            <td>Header-Text bei Liste geschlossen<br/>(optional) :</td>
+                            <td colspan='2'><textarea class='".$fieldClass['closeText']."' name='closeText' cols='34' rows='5'>"
+                                .$_POST['closeText']."</textarea></td>
                         </tr>
                         <tr>
                             <td><input name='setName' type='hidden' value='".$_POST['setName']."'/></td>
