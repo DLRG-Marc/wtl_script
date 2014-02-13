@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.5.1
+ * @date - time  13.02.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -113,11 +113,23 @@
                 $fieldClass['view'] = 'errorSelectfield';
                 $errorTitle['view'] ='Es muß min. ein Feld ausgewählt werden!';
             }
+            if( count(unserialize($_POST['view'])) > 1 && in_array('',unserialize($_POST['view'])) )
+            {
+                $inputRegister_OK = FALSE;
+                $fieldClass['view'] = 'errorSelectfield';
+                $errorTitle['view'] ='Es kann nicht "nichts auswählen" und ein weiteres Feld ausgewählt werden!';
+            }
             if( count(unserialize($_POST['register'])) == 0 )
             {
                 $input_OK = FALSE;
                 $fieldClass['register'] = 'errorSelectfield';
                 $errorTitle['register'] ='Es muß min. ein Feld ausgewählt werden!';
+            }
+            if( count(unserialize($_POST['register'])) > 1 && in_array('',unserialize($_POST['register'])) )
+            {
+                $inputRegister_OK = FALSE;
+                $fieldClass['register'] = 'errorSelectfield';
+                $errorTitle['register'] ='Es kann nicht "nichts auswählen" und ein weiteres Feld ausgewählt werden!';
             }
             if( count(unserialize($_POST['entry'])) == 0 )
             {
@@ -125,17 +137,35 @@
                 $fieldClass['entry'] = 'errorSelectfield';
                 $errorTitle['entry'] ='Es muß min. ein Feld ausgewählt werden!';
             }
+            if( count(unserialize($_POST['entry'])) > 1 && in_array('',unserialize($_POST['entry'])) )
+            {
+                $inputRegister_OK = FALSE;
+                $fieldClass['entry'] = 'errorSelectfield';
+                $errorTitle['entry'] ='Es kann nicht "nichts auswählen" und ein weiteres Feld ausgewählt werden!';
+            }
             if( count(unserialize($_POST['delete'])) == 0 )
             {
                 $input_OK = FALSE;
                 $fieldClass['delete'] = 'errorSelectfield';
                 $errorTitle['delete'] ='Es muß min. ein Feld ausgewählt werden!';
             }
+            if( count(unserialize($_POST['delete'])) > 1 && in_array('',unserialize($_POST['delete'])) )
+            {
+                $inputRegister_OK = FALSE;
+                $fieldClass['delete'] = 'errorSelectfield';
+                $errorTitle['delete'] ='Es kann nicht "nichts auswählen" und ein weiteres Feld ausgewählt werden!';
+            }
             if( count(unserialize($_POST['upload'])) == 0 )
             {
                 $input_OK = FALSE;
                 $fieldClass['upload'] = 'errorSelectfield';
                 $errorTitle['upload'] ='Es muß min. ein Feld ausgewählt werden!';
+            }
+            if( count(unserialize($_POST['upload'])) > 1 && in_array('',unserialize($_POST['upload'])) )
+            {
+                $inputRegister_OK = FALSE;
+                $fieldClass['upload'] = 'errorSelectfield';
+                $errorTitle['upload'] ='Es kann nicht "nichts auswählen" und ein weiteres Feld ausgewählt werden!';
             }
         }
 

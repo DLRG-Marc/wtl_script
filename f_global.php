@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.5.1
+ * @date - time  13.02.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -355,6 +355,24 @@ function number_to_janein($number)
     { return 'Ja'; }
     else
     { return false; }
+}
+
+//@$s string
+//@return array
+function parse_inputs($s)
+{
+    $vars = array();
+    $offset = 0;
+    while( $offset < strlen($s) )
+    {
+        $ib = strpos($s,'#',$offset)+1;
+        $ie = strpos($s,';',$offset);
+        $vb = $ie + 1;
+        $ve = strpos($s,'#',$offset+1);
+        $offset = $ve + 1;
+        $vars[substr($s,$ib,$ie-$ib)] = substr($s,$vb,$ve-$vb);
+    }
+    return $vars;
 }
 
 function kreisdiagramm($abstand,$daten,$einheit,$breite,$hoehe)

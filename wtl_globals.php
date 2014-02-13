@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.5.1
+ * @date - time  13.02.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -37,8 +37,8 @@ $GLOBALS['SYSTEM_SETTINGS']['FILE_PATH'] = 'files/';               // muss norma
 $GLOBALS['SYSTEM_SETTINGS']['CONTENT_PATH'] = 'content/';          // muss normalerweise nicht geändert werden
 $GLOBALS['SYSTEM_SETTINGS']['TEMP_PATH'] = 'temp/';                // muss normalerweise nicht geändert werden
 $GLOBALS['SYSTEM_SETTINGS']['GLOBAL_FILENAME'] = 'wtl_globals.php';// muss normalerweise nicht geändert werden
-$GLOBALS['SYSTEM_SETTINGS']['WTL_REGISTER_URL'] = 'wtl_script/index.php?doc=wtl_reg_';     // muss normalerweise nicht geändert werden
-$GLOBALS['SYSTEM_SETTINGS']['WTL_CONFIRMED_URL'] = 'wtl_script/index.php?doc=wtl_conf';    // muss normalerweise nicht geändert werden
+$GLOBALS['SYSTEM_SETTINGS']['WTL_REGISTER_URL'] = 'index.php?doc=wtl_reg_';     // muss normalerweise nicht geändert werden
+$GLOBALS['SYSTEM_SETTINGS']['WTL_CONFIRMED_URL'] = 'index.php?doc=wtl_conf';    // muss normalerweise nicht geändert werden
 $GLOBALS['SYSTEM_SETTINGS']['AUTOLOGOUTTIME'] = '15';              // Zeit bis zum Autologout in Minuten
 
 // Daten der Gliederung

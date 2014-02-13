@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.5.1
+ * @date - time  13.02.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -65,7 +65,7 @@
         {
             echo "
                 <tr>
-                    <td colspan='3'><input type='radio' name='confirm' value='2'/>&nbsp;&nbsp;Ja, ".$_POST['firstname']." bestätigt seine Teilnsahme</td>
+                    <td colspan='3'><input type='radio' name='confirm' value='2'/>&nbsp;&nbsp;Ja, ".$_POST['firstname']." bestätigt die Teilnahme</td>
                 </tr>
                 <tr>
                     <td colspan='3'><input type='radio' name='confirm' value='1'/>&nbsp;&nbsp;Nein danke, ".$_POST['firstname']." hat kein Interesse mehr</td>

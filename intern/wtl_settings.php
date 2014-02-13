@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.5.1
+ * @date - time  13.02.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -61,10 +61,13 @@
     $connectFields = array();
     $connectFields[0] = array('Age'=>$_POST['selectAge']);
     $connectFields[1] = array();
-    foreach( unserialize(stripslashes($_POST['serSelectfields'])) as $setNo )
+    foreach( unserialize(stripslashes($_POST['serSelectfields'])) as $id )
     {
-        $fieldClass['dropdown_'.$setNo] = 'Selectfield';
-        $connectFields[1][$setNo] = $_POST['dropdown_'.$setNo];
+        if( $id <> '' )
+        {
+            $fieldClass['dropdown_'.$id] = 'Selectfield';
+            $connectFields[1][$id] = $_POST['dropdown_'.$id];
+        }
     }
     $selConnectFields = serialize($connectFields);
 
@@ -119,11 +122,23 @@
                 $fieldClass['inputfields'] = 'errorSelectfield';
                 $errorTitle['inputfields'] ='Es muß min. ein Feld ausgewählt werden!';
             }
+            if( count(unserialize($_POST['inputfields'])) > 1 && in_array('',unserialize($_POST['inputfields'])) )
+            {
+                $inputRegister_OK = FALSE;
+                $fieldClass['selectfields'] = 'errorSelectfield';
+                $errorTitle['selectfields'] ='Es kann nicht "nichts auswählen" und ein weiteres Feld ausgewählt werden!';
+            }
             if( count(unserialize($_POST['selectfields'])) == 0 )
             {
                 $inputRegister_OK = FALSE;
                 $fieldClass['selectfields'] = 'errorSelectfield';
                 $errorTitle['selectfields'] ='Es muß min. ein Feld ausgewählt werden!';
+            }
+            if( count(unserialize($_POST['selectfields'])) > 1 && in_array('',unserialize($_POST['selectfields'])) )
+            {
+                $inputRegister_OK = FALSE;
+                $fieldClass['selectfields'] = 'errorSelectfield';
+                $errorTitle['selectfields'] ='Es kann nicht "nichts auswählen" und ein weiteres Feld ausgewählt werden!';
             }
             if( preg_match('/[\D]/',$_POST['ageMin']) )
             {
@@ -179,13 +194,16 @@
                 $fieldClass['selectAge'] = 'errorSelectfield';
                 $errorTitle['selectAge'] = 'Es muß ein Altersfeld eingegeben werden!';
             }
-            foreach( unserialize(stripslashes($_POST['serSelectfields'])) as $setNo )
+            foreach( unserialize(stripslashes($_POST['serSelectfields'])) as $id )
             {
-                if( empty($_POST['dropdown_'.$setNo]) )
+                if( $id <> '' )
                 {
-                    $inputEntry_OK = FALSE;
-                    $fieldClass['dropdown_'.$setNo] = 'errorSelectfield';
-                    $errorTitle['dropdown_'.$setNo] = 'Es muß eine Zuordnung ausgewählt werden!';
+                    if( empty($_POST['dropdown_'.$id]) )
+                    {
+                        $inputEntry_OK = FALSE;
+                        $fieldClass['dropdown_'.$id] = 'errorSelectfield';
+                        $errorTitle['dropdown_'.$id] = 'Es muß eine Zuordnung ausgewählt werden!';
+                    }
                 }
             }
         }
@@ -337,10 +355,10 @@
             $_POST['ageMin'] = $ageLimitArray[0];
             $_POST['ageMax'] = $ageLimitArray[1];
             // Class der Zuordnungsauswahlfelder
-            foreach( unserialize($_POST['selectfields']) as $setNo )
+            foreach( unserialize($_POST['selectfields']) as $id )
             {
-                $fieldClass['dropdown_'.$setNo] = 'Selectfield';
-                $_POST['dropdown_'.$setNo] = $connectFields[1][$setNo];
+                $fieldClass['dropdown_'.$id] = 'Selectfield';
+                $_POST['dropdown_'.$id] = $connectFields[1][$id];
             }
             // Eingabefelder und Auswahlfelder zusammenführen für Ansicht
             $viewFieldArray = array_merge(unserialize($_POST['inputfields']),unserialize($_POST['selectfields']));
@@ -529,29 +547,31 @@
                         </tr>";
                         foreach( unserialize($_POST['selectfields']) as $id )
                         {
-                            echo "
-                            <tr>
-                            <td>Auswahlfeld<br/><b>";
-                                $result = mysql_query("SELECT setName FROM wtl_fields WHERE id = $id ORDER BY setName ASC",$dbId);
-                                while( $daten = mysql_fetch_object($result) )
-                                {
-                                    echo $daten->setName;
-                                }
-                            echo "</b><br/>zuordnen zu :</td>
-                            <td colspan='2'><select name='dropdown_".$id."' class='".$fieldClass['dropdown_'.$id]."' size='3' title='".$errorTitle['dropdown_'.$id]."'>";
-                                $result = mysql_query("SELECT id, setName FROM wtl_fields WHERE isSet = 1 AND fieldType = 'dropdown' AND xChecked ='1'
-                                    AND setName NOT LIKE 'Alter%' ORDER BY setName ASC",$dbId);
-                                while( $daten = mysql_fetch_object($result) )
-                                {
-                                    echo "<option ";if($_POST['dropdown_'.$id]==$daten->id){echo " selected='selected'";}
-                                    echo" value='".$daten->id."'>".$daten->setName."</option>";
-                                }
-                                echo "<option ";if($_POST['dropdown_'.$id]==$id){echo "selected='selected'";}
-                                echo" value='".$id."'>nichts auswählen</option>";
-
-                            echo "
-                            </select></td>
-                            </tr>";
+                            if( $id <> '' )
+                            {
+                                echo "
+                                <tr>
+                                <td>Auswahlfeld<br/><b>";
+                                    $result = mysql_query("SELECT setName FROM wtl_fields WHERE id = $id ORDER BY setName ASC",$dbId);
+                                    while( $daten = mysql_fetch_object($result) )
+                                    {
+                                        echo $daten->setName;
+                                    }
+                                echo "</b><br/>zuordnen zu :</td>
+                                <td colspan='2'><select name='dropdown_".$id."' class='".$fieldClass['dropdown_'.$id]."' size='3' title='".$errorTitle['dropdown_'.$id]."'>";
+                                    $result = mysql_query("SELECT id, setName FROM wtl_fields WHERE isSet = 1 AND fieldType = 'dropdown' AND xChecked ='1'
+                                        AND setName NOT LIKE 'Alter%' ORDER BY setName ASC",$dbId);
+                                    while( $daten = mysql_fetch_object($result) )
+                                    {
+                                        echo "<option ";if($_POST['dropdown_'.$id]==$daten->id){echo " selected='selected'";}
+                                        echo" value='".$daten->id."'>".$daten->setName."</option>";
+                                    }
+                                    echo "<option ";if($_POST['dropdown_'.$id]==$id){echo "selected='selected'";}
+                                    echo" value='".$id."'>nichts auswählen</option>";
+                                echo "
+                                </select></td>
+                                </tr>";
+                            }
                         }
                         echo "
                         <tr>

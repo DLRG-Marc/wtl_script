@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.5.1
+ * @date - time  13.02.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -227,6 +227,23 @@
                 // email vorbereiten
                 $mailWildcardArray = array('#VORNAME#','#NACHNAME#','#LISTENNAME#','#MELDEDATUM#','#MELDENR#','#DLRGNAME#');
                 $mailVariableArray = array($firstname,$lastname,$listName,date('d.m.Y',$tstamp),$registerId,$dlrgName);
+//neu
+                $mailtext = str_replace($mailWildcardArray,$mailVariableArray,$registerMail);
+                $matchcount = preg_match_all('/#\w+#/',$mailtext,$matches);
+                if( ($matchcount > 0) && ($matchcount !== FALSE) )
+                {
+                    foreach( $matches[0] as $value )
+                    {
+                        $result = mysql_query("SELECT id, setNo FROM wtl_fields WHERE isSet = '1' AND setName = '".trim($value,'#')."'");
+                        $field = mysql_fetch_row($result);
+                        $result = mysql_query("SELECT dataLabel FROM wtl_fields WHERE setNo = '".$field[1]."' AND data = '".$_POST[$field[0]]."'");
+                        $label = mysql_fetch_row($result);
+                        $varReplace[] = $label[0];
+                    }
+                    $mailtext = str_replace($matches[0],$varReplace,$mailtext);
+                }
+
+/*
                 preg_match_all('/#\w+#/',$registerMail,$treffer,PREG_SET_ORDER);
                 foreach( $treffer as $wert )
                 {
@@ -245,6 +262,7 @@
                     }
                 }
                 $mailtext = str_replace($mailWildcardArray,$mailVariableArray,$registerMail);
+*/
                 send_mail($mailadress,$_POST['mail'],$dlrgName.' Wartelisteneintrag '.$listName,$mailtext);
                 // Erfolgsmeldung
                 $displayMessage = TRUE;
@@ -314,7 +332,7 @@
                             <table>
                                 <tr><td>Vorname :</td><td>".$daten->firstname."</td></tr>
                                 <tr><td>Name :</td><td>".$daten->lastname."</td></tr>
-                                <tr><td>Geurtsdatum :</td><td>".date('d.m.Y', $daten->dateOfBirth)."</td></tr>
+                                <tr><td>Geburtsdatum :</td><td>".date('d.m.Y', $daten->dateOfBirth)."</td></tr>
                             </table>
                             </div>
                             <p><a href='".htmlspecialchars($_SERVER['REQUEST_URI'])."'>Einen weiteren Datensatz ändern.</a></p>";
@@ -325,7 +343,7 @@
             {
                 $displayMessage = TRUE;
                 $message = "<p><b>Ungültige Meldenummer !</b><br/><br/>Es sind keine Daten zu dieser Meldenummer hinterlegt.<br/>
-                    <a href='".htmlspecialchars($_SERVER['REQUEST_URI'])."'>Erneut veruchen.</a></p>";
+                    <a href='".htmlspecialchars($_SERVER['REQUEST_URI'])."'>Erneut versuchen.</a></p>";
             }
         }
 
@@ -427,8 +445,8 @@
                 $result = mysql_query("SELECT setName FROM wtl_lists WHERE id = '".$id."'",$dbId);
                 $listNameArray = mysql_fetch_row($result);
                 $confirmOK = TRUE;
-                $message = "<p>Hier bestätigst Du die Aufnahme aus der Warteliste ".$listNameArray[0]." für<br/>".
-                    $_POST['firstname']." ".$_POST['lastname']."<br/>
+                $message = "<p>Hier bestätigst Du die Aufnahme aus der Warteliste ".$listNameArray[0]." für<br/>
+                    <b>".$_POST['firstname']." ".$_POST['lastname']."</b><br/>
                     laut der Aufnahmemail vom ".date('d.m.Y',$entryTstamp)."</p>";
                 if( $confirm != '0' )
                 {

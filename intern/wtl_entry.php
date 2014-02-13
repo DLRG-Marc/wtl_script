@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.5.1
+ * @date - time  13.02.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -140,14 +140,11 @@
             }
             foreach( $connectFields[1] as $id )
             {
-                $result = mysql_query("SELECT setNo FROM wtl_fields WHERE id = '".$id."'",$dbId);
-                $setNoArray = mysql_fetch_row($result);
-                $setNo = $setNoArray[0];
-                if( empty($_POST['dropdown_'.$setNo]) )
+                if( empty($_POST[$id]) )
                 {
                     $input_OK = FALSE;
-                    $fieldClass['dropdown_'.$setNo] = 'errorSelectfield';
-                    $errorTitle['dropdown_'.$setNo] = 'Es muß ein Feld ausgewählt werden!';
+                    $fieldClass[$id] = 'errorSelectfield';
+                    $errorTitle[$id] = 'Es muß ein Feld ausgewählt werden!';
                 }
             }
         }
@@ -161,11 +158,9 @@
                 // Auswahlfelder durchsuchen Teil der SQL-Abfrage
                 foreach( $connectFields[1] as $key => $id )
                 {
-                    $result = mysql_query("SELECT setNo FROM wtl_fields WHERE id = '".$id."'",$dbId);
-                    $setNoArray = mysql_fetch_row($result);
-                    if( $_POST['dropdown_'.$setNoArray[0]] != 'EGAL' )
+                    if( $_POST[$id] != 'EGAL' )
                     {
-                        $str = preg_replace('/\s+/','',$_POST['dropdown_'.$setNoArray[0]]);
+                        $str = preg_replace('/\s+/','',$_POST[$id]);
                         if( strpos($str,'ODER') !== FALSE )
                         {
                             $str = str_replace("ODER","#%' OR selected LIKE '%#".$key.";",$str);
@@ -200,9 +195,9 @@
                 $button .= "<input type='hidden' name='startdate' value='".$_POST['startdate']."'/>";
                 $button .= "<input type='hidden' name='listId' value='".$listID."'/>";
                 $button .= "<input type='hidden' name='entryId' value='".$_POST['entryId']."'/>";
-                foreach( $connectFields[1] as $setNo )
+                foreach( $connectFields[1] as $id )
                 {
-                    $button .= "<input type='hidden' name='dropdown_".$setNo."' value='".$_POST['dropdown_'.$setNo]."'/>";
+                    $button .= "<input type='hidden' name='".$id."' value='".$_POST[$id]."'/>";
                 }
                 $button .= "</p><p>Jede Rückmeldung der Aufnahme sofort per Mail zusenden :&nbsp;&nbsp;&nbsp;
                     <input class='".$fieldClass['entryConfMail']."' type='checkbox' name='entryConfMail' value='1' checked='checked'/></p>";
@@ -257,41 +252,70 @@
                     $headline = "<p><b>".str_replace(';','<br/>',$headline_pdf)."</b></p>";
                     $button .= "<p><input class='button' type='button' name='to_start' value='weitere&#10;aufnehmen'
                         onclick=\"window.location.href='".$script_url."'\"/></p>";
-/*
-                    $button .= "<input class='button' type='button' name='print_pdf' value='als pdf drucken'
-                        onclick=\"window.open('".$url_pdf."&data=".$file_pdf."', '_blank')\"/></p>";
-*/
-                    $SQL_Befehl_Read = "SELECT * FROM wtl_members WHERE entryId != '' AND id = '".$id_all."'";
-                    $result_view = mysql_query($SQL_Befehl_Read, $dbId);
+                    $result_view = mysql_query("SELECT * FROM wtl_members WHERE entryId != '' AND id = '".$id_all."'", $dbId);
                     // email vorbereiten
-                    $mailWildcardArray = array('#MELDEDATUM#','#VORNAME#','#NACHNAME#','#GEBDATUM#','#LISTENNAME#','#DLRGNAME#',
-                        '#STARTDATUM#','#STARTZEIT#','#ANTWORTDATUM#','#AUFNEHMER#','#AUFNEHMERMAIL#','#AUFNEHMERTEL#','#BESTAETIGUNGSLINK#');
-                    preg_match_all('/#\w+#/',$entryMail,$treffer,PREG_SET_ORDER);
+                    $PhFix = array('#MELDEDATUM#','#VORNAME#','#NACHNAME#','#GEBDATUM#','#LISTENNAME#','#DLRGNAME#',
+                        '#STARTDATUM#','#ANTWORTDATUM#','#AUFNEHMER#','#AUFNEHMERMAIL#','#AUFNEHMERTEL#','#BESTAETIGUNGSLINK#');
+                    $matchcount = preg_match_all('/#\w+#/',$entryMail,$matches);
+                    $fieldmatches = array_diff($matches[0],$PhFix);
+                    if( count($fieldmatches) > 0 )
+                    {
+                        $field = array();
+                        foreach( $fieldmatches as $setName )
+                        {
+                            $result = mysql_query("SELECT id, setNo, xChecked, fieldType FROM wtl_fields WHERE isSet = '1' AND
+                                setName = '".trim($setName,'#')."'", $dbId);
+                            $field[] = mysql_fetch_row($result);
+                        }
+                    }
                     while( $daten = mysql_fetch_object($result_view) )
                     {
                         $confirmLink = '<http://www.'.str_replace(array('www.','http://'),'',$_SERVER['SERVER_NAME']).
                             substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'/',1)+1).$GLOBALS['SYSTEM_SETTINGS']['WTL_REGISTER_URL'].
                             $listID.'&data=confirm&entryToken='.base64_encode($daten->registerId.$daten->entryId).'>';
-                        $mailVariableArray = array(date('d.m.Y',$daten->tstamp),$daten->firstname,$daten->lastname,date('d.m.Y',$daten->dateOfBirth),
-                            $listName,$dlrgName,date('d.m.Y',$daten->startTstamp),date('H:m',$daten->startTstamp),date('d.m.Y',$daten->answerTstamp),
+                        $fixReplace = array(date('d.m.Y',$daten->tstamp),$daten->firstname,$daten->lastname,date('d.m.Y',$daten->dateOfBirth),
+                            $listName,$dlrgName,date('d.m.Y',$daten->startTstamp),date('d.m.Y',$daten->answerTstamp),
                             $username,$usermail,$userphone,$confirmLink);
-                        foreach( $treffer as $wert )
+                        $mailtext = str_replace($PhFix,$fixReplace,$entryMail);
+                        $fc = 0;
+                        while( count($field) > $fc )
                         {
-                            if( !in_array($wert[0],$mailWildcardArray) )
+                            if( $field[$fc][2] == '1' )
                             {
-                                $result = mysql_query("SELECT setNo, fieldType FROM wtl_fields WHERE isSet = '1' AND setName = '".trim($wert[0],'#')."'", $dbId);
-                                while( $daten_fields = mysql_fetch_object($result) )
+                                if( $field[$fc][3] == 'input' )
                                 {
-                                    $fieldType = $daten_fields->fieldType;
-                                    $setNo = $daten_fields->setNo;
+                                    $value = $MYSQL[$field[$fc][0]];
                                 }
-                                $result_selectField = mysql_query("SELECT dataLabel FROM wtl_fields WHERE setNo = '".$setNo."'
-                                    AND data = '".$_POST[$fieldType.'_'.$setNo]."'", $dbId);
-                                $selectDataLabelArray = mysql_fetch_row($result_selectField);
-                                $entryMail = str_replace($wert[0],$selectDataLabelArray[0],$entryMail);
+                                else
+                                {
+                                    $result = mysql_query("SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
+                                        setNo = '".$field[$fc][1]."' AND data = '".$MYSQL[$field[$fc][0]]."'", $dbId);
+                                    $label = mysql_fetch_row($result);
+                                    $value = $label[0];
+                                }
                             }
+                            else
+                            {
+                                $result = mysql_query("SELECT inputs, selected FROM wtl_members WHERE id = '".$daten->id."'", $dbId);
+                                $data_m = mysql_fetch_row($result);
+                                if( $field[$fc][3] == 'input' )
+                                {
+                                    $inputs = parse_inputs($data_m[0]);
+                                    $value = $inputs[$field[$fc][0]];
+                                }
+                                else
+                                {
+                                    $inputs = parse_inputs($data_m[1]);
+                                    $result = mysql_query("SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
+                                        setNo = '".$data_f[1]."' AND data = '".$inputs[$field[$fc][0]]."'", $dbId);
+                                    $label = mysql_fetch_row($result);
+                                    $value = $label[0];
+                                }
+                            }
+                            $varReplace[] = $value;
+                            $fc++;
                         }
-                        $mailtext = str_replace($mailWildcardArray,$mailVariableArray,$entryMail);
+                        $mailtext = str_replace($fieldmatches,$varReplace,$mailtext);
                         send_mail($mailadress,$daten->mail,$dlrgName.' Aufnahme aus der Wartelist '.$listName,$mailtext);
                     }
                     if( preg_match('/#BESTAETIGUNGSLINK#/',$entryMail) == 1 )
@@ -386,20 +410,16 @@
                     {
                         echo"<tr>";
                             $result = mysql_query("SELECT setNo, caption FROM wtl_fields WHERE id = '".$id."'",$dbId);
-                            while( $daten = mysql_fetch_object($result) )
-                            {
-                                echo "<td>".$daten->caption." :</td>";
-                                $setNo = $daten->setNo;
-                            }
+                            $field = mysql_fetch_row($result);
+                            echo "<td>".$field[1]." :</td>";
                             echo "
-                                <td colspan='2'><select name='dropdown_".$setNo."' class='".$fieldClass['dropdown_'.$setNo]."' size='3'
-                                    title='".$errorTitle['dropdown_'.$setNo]."'>";
-                                $SQL_Befehl_Read = "SELECT data, dataLabel FROM wtl_fields WHERE isSet != '1' AND setNo = '".$setNo."'
+                                <td colspan='2'><select name='".$id."' class='".$fieldClass[$id]."' size='3' title='".$errorTitle[$id]."'>";
+                                $SQL_Befehl_Read = "SELECT data, dataLabel FROM wtl_fields WHERE isSet != '1' AND setNo = '".$field[0]."'
                                     ORDER BY id ASC";
                                 $result = mysql_query($SQL_Befehl_Read, $dbId);
                                 while( $daten = mysql_fetch_object($result) )
                                 {
-                                    echo "<option ";if($_POST['dropdown_'.$setNo]==$daten->data){echo "selected='selected'";}
+                                    echo "<option ";if($_POST[$id]==$daten->data){echo "selected='selected'";}
                                     echo" value='".$daten->data."'>".$daten->dataLabel."</option>";
                                 }
                                 echo "

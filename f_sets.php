@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.5.1
+ * @date - time  13.02.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -355,28 +355,31 @@ function dataFromSelFields($dbId,$sqlTablePrefix,$selFieldArray,$dataIdArray,$re
     }
     foreach( unserialize($selFieldArray) as $fieldId )
     {
-        $index = array_search($fieldId, $viewFieldIndex);
-        if( $index !== FALSE )
+        if( $fieldId != '' )
         {
-            $value = $dataIdArray[$index];
-            $result = mysql_query("SELECT fieldType, setNo FROM ".$sqlTablePrefix."_fields WHERE id = '".$fieldId."'",$dbId);
-            $fieldArray = mysql_fetch_row($result);
-            if( $fieldArray[0] == 'dropdown' )
+            $index = array_search($fieldId, $viewFieldIndex);
+            if( $index !== FALSE )
             {
-                $SQL_Befehl_Read = "SELECT dataLabel FROM ".$sqlTablePrefix."_fields WHERE isSet != '1' AND setNo = '".$fieldArray[1]."'
-                    AND data = '".ltrim(strstr(trim($value,'#'),';'),';')."'";
-                $result = mysql_query($SQL_Befehl_Read,$dbId);
-                $dataArray = mysql_fetch_row($result);
-                array_push($returnArray,$dataArray[0]);
+                $value = $dataIdArray[$index];
+                $result = mysql_query("SELECT fieldType, setNo FROM ".$sqlTablePrefix."_fields WHERE id = '".$fieldId."'",$dbId);
+                $fieldArray = mysql_fetch_row($result);
+                if( $fieldArray[0] == 'dropdown' )
+                {
+                    $SQL_Befehl_Read = "SELECT dataLabel FROM ".$sqlTablePrefix."_fields WHERE isSet != '1' AND setNo = '".$fieldArray[1]."'
+                        AND data = '".ltrim(strstr(trim($value,'#'),';'),';')."'";
+                    $result = mysql_query($SQL_Befehl_Read,$dbId);
+                    $dataArray = mysql_fetch_row($result);
+                    array_push($returnArray,$dataArray[0]);
+                }
+                if( $fieldArray[0] == 'input' )
+                {
+                    array_push($returnArray,ltrim(strstr(trim($value,'#'),';'),';'));
+                }
             }
-            if( $fieldArray[0] == 'input' )
+            else
             {
-                array_push($returnArray,ltrim(strstr(trim($value,'#'),';'),';'));
+                array_push($returnArray,' ');
             }
-        }
-        else
-        {
-            array_push($returnArray,' ');
         }
     }
     return $returnArray;
