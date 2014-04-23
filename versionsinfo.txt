@@ -1,6 +1,13 @@
 =======================================
 Revisions of Automatic Waitinglist
 =======================================
+version 1.5.2 (2014-04-23)
+---------------------------------------
+- issue 14 fixed
+- function 13 added
+- fields referenced to id
+
+
 version 1.5.1 (2014-02-13)
 ---------------------------------------
 - issue 7,8,9,10 fixed

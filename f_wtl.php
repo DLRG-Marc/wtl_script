@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.5.2
+ * @date - time  23.04.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -172,31 +172,30 @@ function send_register_mail($dbId,$memberID,$senderadress,$registerMail,$dlrgNam
     while( $data = mysql_fetch_object($result) )
     {
         // email vorbereiten
+        $data_inp_sel = $data->inputs.$data->selected;
         $mailWildcardArray = array('#VORNAME#','#NACHNAME#','#LISTENNAME#','#MELDEDATUM#','#MELDENR#','#DLRGNAME#');
         $mailVariableArray = array($data->firstname,$data->lastname,$listName,date('d.m.Y',$data->tstamp),$data->registerId,$dlrgName);
-        preg_match_all('/#\w+#/',$registerMail,$treffer,PREG_SET_ORDER);
-        foreach( $treffer as $wert )
-        {
-            if( !in_array($wert[0],$mailWildcardArray) )
-            {
-                $result = mysql_query("SELECT setNo, fieldType FROM wtl_fields WHERE isSet = '1' AND setName = '".trim($wert[0],'#')."'", $dbId);
-                while( $daten = mysql_fetch_object($result) )
-                {
-                    $setNo = $daten->setNo;
-                }
-                $start = (strpos($data->selected,"#".$setNo.";")+2+strlen($setNo));
-                $length = (strpos($data->selected,"#",1)-$start);
-                $data_search = substr($data->selected,$start,$length);
-                $result_selectField = mysql_query("SELECT dataLabel FROM wtl_fields WHERE setNo = '".$setNo."'
-                    AND data = '".$data_search."'", $dbId);
-                $selectDataLabelArray = mysql_fetch_row($result_selectField);
-                $registerMail = str_replace($wert[0],$selectDataLabelArray[0],$registerMail);
-            }
-        }
         $mailtext = str_replace($mailWildcardArray,$mailVariableArray,$registerMail);
+        $matchcount = preg_match_all('/#\w+#/',$mailtext,$matches);
+        if( ($matchcount > 0) && ($matchcount !== FALSE) )
+        {
+            foreach( $matches[0] as $value )
+            {
+                $result = mysql_query("SELECT id, setNo FROM wtl_fields WHERE isSet = '1' AND setName = '".trim($value,'#')."'",$dbId);
+                $field = mysql_fetch_row($result);
+                $start = (strpos($data_inp_sel,"#".$field[0].";")+2+strlen($field[0]));
+                $length = (strpos($data_inp_sel,"#",$start+1)-$start);
+                $data_search = substr($data_inp_sel,$start,$length);
+                $result = mysql_query("SELECT dataLabel FROM wtl_fields WHERE setNo = '".$field[1]."' AND data = '".$data_search."'",$dbId);
+                $label = mysql_fetch_row($result);
+                $varReplace[] = $label[0];
+            }
+            $mailtext = str_replace($matches[0],$varReplace,$mailtext);
+        }
         $retarray[0] = send_mail($senderadress,$data->mail,$dlrgName.' Wartelisteneintrag '.$listName,$mailtext);
         $retarray[1] = $data->firstname." ".$data->lastname;
     }
     return $retarray;
 }
+
 ?>

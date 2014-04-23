@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.1
- * @date - time  13.02.2014 - 19:00
+ * @WTL version  1.5.2
+ * @date - time  23.04.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -25,6 +25,7 @@
 
     // Settings
     require_once('f_fields.php');
+    require_once('f_wtl.php');
     $listID = mysql_real_escape_string($_GET['listID']);
     $data = mysql_real_escape_string($_GET['data']);
     $entryToken = mysql_real_escape_string($_GET['entryToken']);
@@ -101,12 +102,12 @@
     // class aller Eingabefelder
     foreach( $inputfields as $id )
     {
-        $fieldClass['input_'.$id] = 'Field';
+        $fieldClass[$id] = 'Field';
     }
     // class aller Auswahlfelder
     foreach( $selectfields as $id )
     {
-        $fieldClass['dropdown_'.$id] = 'Selectfield';
+        $fieldClass[$id] = 'Selectfield';
     }
 
     echo "<div id='wtl_register'>
@@ -193,8 +194,8 @@
                 $dateOfBirth = strtotime(date_german2mysql($MYSQL['dateOfBirth']));
                 $ageYear = date('Y') - date('Y', $dateOfBirth);
                 $tstamp = time();
-                $inputs = inputfielddata_to_inputdata($inputfields,$MYSQL,'input_');
-                $selects = inputfielddata_to_inputdata($selectfields,$MYSQL,'dropdown_');
+                $inputs = inputfielddata_to_inputdata($inputfields,$MYSQL);
+                $selects = inputfielddata_to_inputdata($selectfields,$MYSQL);
                 if( $authority === TRUE )
                 {
                     $tstamp = strtotime(date_german2mysql($_POST['registerDate']));
@@ -224,46 +225,9 @@
             }
             if( mysql_affected_rows($dbId) == 1)
             {
-                // email vorbereiten
-                $mailWildcardArray = array('#VORNAME#','#NACHNAME#','#LISTENNAME#','#MELDEDATUM#','#MELDENR#','#DLRGNAME#');
-                $mailVariableArray = array($firstname,$lastname,$listName,date('d.m.Y',$tstamp),$registerId,$dlrgName);
-//neu
-                $mailtext = str_replace($mailWildcardArray,$mailVariableArray,$registerMail);
-                $matchcount = preg_match_all('/#\w+#/',$mailtext,$matches);
-                if( ($matchcount > 0) && ($matchcount !== FALSE) )
-                {
-                    foreach( $matches[0] as $value )
-                    {
-                        $result = mysql_query("SELECT id, setNo FROM wtl_fields WHERE isSet = '1' AND setName = '".trim($value,'#')."'");
-                        $field = mysql_fetch_row($result);
-                        $result = mysql_query("SELECT dataLabel FROM wtl_fields WHERE setNo = '".$field[1]."' AND data = '".$_POST[$field[0]]."'");
-                        $label = mysql_fetch_row($result);
-                        $varReplace[] = $label[0];
-                    }
-                    $mailtext = str_replace($matches[0],$varReplace,$mailtext);
-                }
-
-/*
-                preg_match_all('/#\w+#/',$registerMail,$treffer,PREG_SET_ORDER);
-                foreach( $treffer as $wert )
-                {
-                    if( !in_array($wert[0],$mailWildcardArray) )
-                    {
-                        $result = mysql_query("SELECT setNo, fieldType FROM wtl_fields WHERE isSet = '1' AND setName = '".trim($wert[0],'#')."'", $dbId);
-                        while( $daten = mysql_fetch_object($result) )
-                        {
-                            $fieldType = $daten->fieldType;
-                            $setNo = $daten->setNo;
-                        }
-                        $result_selectField = mysql_query("SELECT dataLabel FROM wtl_fields WHERE setNo = '".$setNo."'
-                            AND data = '".$_POST[$fieldType.'_'.$setNo]."'", $dbId);
-                        $selectDataLabelArray = mysql_fetch_row($result_selectField);
-                        $registerMail = str_replace($wert[0],$selectDataLabelArray[0],$registerMail);
-                    }
-                }
-                $mailtext = str_replace($mailWildcardArray,$mailVariableArray,$registerMail);
-*/
-                send_mail($mailadress,$_POST['mail'],$dlrgName.' Wartelisteneintrag '.$listName,$mailtext);
+                // neu
+                $memberID = mysql_insert_id($dbId);
+                $sendOK = send_register_mail($dbId,$memberID,$mailadress,$registerMail,$dlrgName,$listName);
                 // Erfolgsmeldung
                 $displayMessage = TRUE;
                 $message = "<p><b>Du hast Dich erfolgreich in die Warteliste ".$listName." eingetragen !</b></p>
@@ -309,8 +273,8 @@
                         $_POST['dateOfBirth'] = date('d.m.Y', $daten->dateOfBirth);
                         $_POST['mail'] = $daten->mail;
                         $_POST['registerDate'] = date('d.m.Y', $daten->tstamp);
-                        $_POST = inputfielddata_to_inputfields($daten->inputs,$_POST,'input_');
-                        $_POST = inputfielddata_to_inputfields($daten->selected,$_POST,'dropdown_');
+                        $_POST = inputfielddata_to_inputfields($daten->inputs,$_POST);
+                        $_POST = inputfielddata_to_inputfields($daten->selected,$_POST);
                         $registerId_OK = TRUE;
                     }
                     // wenn Person schon aufgenommen wurde

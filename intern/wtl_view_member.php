@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.5.2
+ * @date - time  19.02.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -64,12 +64,12 @@
     // class aller Eingabefelder
     foreach( $inputfields as $id )
     {
-        $fieldClass['input_'.$id] = 'Field';
+        $fieldClass[$id] = 'Field';
     }
     // class aller Auswahlfelder
     foreach( $selectfields as $id )
     {
-        $fieldClass['dropdown_'.$id] = 'Selectfield';
+        $fieldClass[$id] = 'Selectfield';
     }
 
     if( isset($_POST['sendEdit']) )
@@ -105,8 +105,8 @@
                     $_POST['dateOfBirth'] = date('d.m.Y', $daten->dateOfBirth);
                     $_POST['mail'] = $daten->mail;
                     $_POST['registerDate'] = date('d.m.Y', $daten->tstamp);
-                    $_POST = inputfielddata_to_inputfields($daten->inputs,$_POST,'input_');
-                    $_POST = inputfielddata_to_inputfields($daten->selected,$_POST,'dropdown_');
+                    $_POST = inputfielddata_to_inputfields($daten->inputs,$_POST);
+                    $_POST = inputfielddata_to_inputfields($daten->selected,$_POST);
                     $entry = $daten->entryId;
                     $registerId_OK = TRUE;
                 }

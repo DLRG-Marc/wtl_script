@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.1
- * @date - time  13.02.2014 - 19:00
+ * @WTL version  1.5.2
+ * @date - time  19.02.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -169,14 +169,14 @@
                         echo "<td colspan='2'>";
                         if( $fieldSizeArray[1] > '1' )
                         {
-                            echo "<textarea class='".$fieldClass['input_'.$id]."' name='input_".$id."' cols='".$fieldSizeArray[0]."'
-                                rows='".$fieldSizeArray[1]."' title='".$errorTitle['input_'.$id]."'".$readonly.">".$_POST['input_'.$id]."
+                            echo "<textarea class='".$fieldClass[$id]."' name='".$id."' cols='".$fieldSizeArray[0]."'
+                                rows='".$fieldSizeArray[1]."' title='".$errorTitle[$id]."'".$readonly.">".$_POST[$id]."
                                 </textarea></td>";
                         }
                         else
                         {
-                            echo "<input class='".$fieldClass['input_'.$id]."' type='text' name='input_".$id."' size='".$fieldSizeArray[0]."'
-                                title='".$errorTitle['input_'.$id]."' value='".$_POST['input_'.$id]."'".$readonly."/></td>";
+                            echo "<input class='".$fieldClass[$id]."' type='text' name='".$id."' size='".$fieldSizeArray[0]."'
+                                title='".$errorTitle[$id]."' value='".$_POST[$id]."'".$readonly."/></td>";
                         }
                     echo "</tr>";
                 }
@@ -194,14 +194,14 @@
                             echo "<td>".nl2br($daten->caption)." :</td>";
                         }
                         echo "
-                            <td colspan='2'><select name='dropdown_".$id."' class='".$fieldClass['dropdown_'.$id]."' size='3'
-                                title='".$errorTitle['dropdown_'.$id]."'".$readonly.">";
+                            <td colspan='2'><select name='".$id."' class='".$fieldClass[$id]."' size='3'
+                                title='".$errorTitle[$id]."'".$readonly.">";
                             $SQL_Befehl_Read = "SELECT data, dataLabel FROM wtl_fields WHERE isSet != '1' AND setNo = '".$setNo."'
                                 ORDER BY id ASC";
                             $result = mysql_query($SQL_Befehl_Read,$dbId);
                             while( $daten = mysql_fetch_object($result) )
                             {
-                                echo "<option ";if($_POST['dropdown_'.$id]==$daten->data){echo "selected='selected'";}
+                                echo "<option ";if($_POST[$id]==$daten->data){echo "selected='selected'";}
                                 echo" value='".$daten->data."'>".$daten->dataLabel."</option>";
                             }
                             echo "

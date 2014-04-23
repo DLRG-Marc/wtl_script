@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.1
- * @date - time  13.02.2014 - 19:00
+ * @WTL version  1.5.2
+ * @date - time  19.02.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -65,8 +65,8 @@
     {
         if( $id <> '' )
         {
-            $fieldClass['dropdown_'.$id] = 'Selectfield';
-            $connectFields[1][$id] = $_POST['dropdown_'.$id];
+            $fieldClass[$id] = 'Selectfield';
+            $connectFields[1][$id] = $_POST[$id];
         }
     }
     $selConnectFields = serialize($connectFields);
@@ -198,11 +198,11 @@
             {
                 if( $id <> '' )
                 {
-                    if( empty($_POST['dropdown_'.$id]) )
+                    if( empty($_POST[$id]) )
                     {
                         $inputEntry_OK = FALSE;
-                        $fieldClass['dropdown_'.$id] = 'errorSelectfield';
-                        $errorTitle['dropdown_'.$id] = 'Es muß eine Zuordnung ausgewählt werden!';
+                        $fieldClass[$id] = 'errorSelectfield';
+                        $errorTitle[$id] = 'Es muß eine Zuordnung ausgewählt werden!';
                     }
                 }
             }
@@ -357,8 +357,8 @@
             // Class der Zuordnungsauswahlfelder
             foreach( unserialize($_POST['selectfields']) as $id )
             {
-                $fieldClass['dropdown_'.$id] = 'Selectfield';
-                $_POST['dropdown_'.$id] = $connectFields[1][$id];
+                $fieldClass[$id] = 'Selectfield';
+                $_POST[$id] = $connectFields[1][$id];
             }
             // Eingabefelder und Auswahlfelder zusammenführen für Ansicht
             $viewFieldArray = array_merge(unserialize($_POST['inputfields']),unserialize($_POST['selectfields']));
@@ -558,15 +558,15 @@
                                         echo $daten->setName;
                                     }
                                 echo "</b><br/>zuordnen zu :</td>
-                                <td colspan='2'><select name='dropdown_".$id."' class='".$fieldClass['dropdown_'.$id]."' size='3' title='".$errorTitle['dropdown_'.$id]."'>";
+                                <td colspan='2'><select name='".$id."' class='".$fieldClass[$id]."' size='3' title='".$errorTitle[$id]."'>";
                                     $result = mysql_query("SELECT id, setName FROM wtl_fields WHERE isSet = 1 AND fieldType = 'dropdown' AND xChecked ='1'
                                         AND setName NOT LIKE 'Alter%' ORDER BY setName ASC",$dbId);
                                     while( $daten = mysql_fetch_object($result) )
                                     {
-                                        echo "<option ";if($_POST['dropdown_'.$id]==$daten->id){echo " selected='selected'";}
+                                        echo "<option ";if($_POST[$id]==$daten->id){echo " selected='selected'";}
                                         echo" value='".$daten->id."'>".$daten->setName."</option>";
                                     }
-                                    echo "<option ";if($_POST['dropdown_'.$id]==$id){echo "selected='selected'";}
+                                    echo "<option ";if($_POST[$id]==$id){echo "selected='selected'";}
                                     echo" value='".$id."'>nichts auswählen</option>";
                                 echo "
                                 </select></td>

@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.1
- * @date - time  13.02.2014 - 19:00
+ * @WTL version  1.5.2
+ * @date - time  08.04.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -69,9 +69,9 @@
         $connectFields = unserialize($daten->connectFields);
     }
     // class aller Auswahlfelder
-    foreach( $connectFields[1] as $setNo )
+    foreach( $connectFields[1] as $id )
     {
-        $fieldClass['dropdown_'.$setNo] = 'Selectfield';
+        $fieldClass[$id] = 'Selectfield';
     }
     // Aufnahme-ID generieren
     if( empty($_POST['entryId']) )
@@ -188,7 +188,7 @@
                 $headline_pdf = '';
                 $headline = "<p><b>".$headline_pdf."</b></p>";
                 $button = "<p><input class='button' type='submit' name='register' value='Aufnehmen'/>";
-                $button .= "<input class='button' type='button' name='back' value='zurück' onclick=\"window.back()\"/>";
+                $button .= "<input class='button' type='reset' name='cancel' value='abbrechen' onclick=\"location.href='".$script_url."'\"/>";
                 $button .= "<input type='hidden' name='age' value='".$_POST['age']."'/>";
                 $button .= "<input type='hidden' name='limit' value='".$_POST['limit']."'/>";
                 $button .= "<input type='hidden' name='answerdate' value='".$_POST['answerdate']."'/>";
@@ -307,7 +307,7 @@
                                 {
                                     $inputs = parse_inputs($data_m[1]);
                                     $result = mysql_query("SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
-                                        setNo = '".$data_f[1]."' AND data = '".$inputs[$field[$fc][0]]."'", $dbId);
+                                        setNo = '".$field[$fc][1]."' AND data = '".$inputs[$field[$fc][0]]."'", $dbId);
                                     $label = mysql_fetch_row($result);
                                     $value = $label[0];
                                 }

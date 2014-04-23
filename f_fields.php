@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.5.2
+ * @date - time  19.02.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -41,17 +41,17 @@ function checkInputfields($dbId,$sqlTable,$fields,$returnArray)
             if( !$notRequ )
             {
                 // Zeichenlänge des Eingabefeldes auf Gültigkeit prüfen
-                if( $charLengthArray[0] != '' && (strlen($_POST['input_'.$id]) < $charLengthArray[0]) )
+                if( $charLengthArray[0] != '' && (strlen($_POST[$id]) < $charLengthArray[0]) )
                 {
                     $returnArray[0] = FALSE;
-                    $returnArray['class']['input_'.$id] = 'errorField';
-                    $returnArray['text']['input_'.$id] = 'Es müssen min. '.$charLengthArray[0].' Zeichen eingegeben werden!';
+                    $returnArray['class'][$id] = 'errorField';
+                    $returnArray['text'][$id] = 'Es müssen min. '.$charLengthArray[0].' Zeichen eingegeben werden!';
                 }
-                if( $charLengthArray[1] != '' && (strlen($_POST['input_'.$id]) > $charLengthArray[1]) )
+                if( $charLengthArray[1] != '' && (strlen($_POST[$id]) > $charLengthArray[1]) )
                 {
                     $returnArray[0] = FALSE;
-                    $returnArray['class']['input_'.$id] = 'errorField';
-                    $returnArray['text']['input_'.$id] = 'Es dürfen max. '.$charLengthArray[0].' Zeichen eingegeben werden!';
+                    $returnArray['class'][$id] = 'errorField';
+                    $returnArray['text'][$id] = 'Es dürfen max. '.$charLengthArray[0].' Zeichen eingegeben werden!';
                 }
                 // Inhalt des Eingabefeldes auf Buchstaben bzw. Zahlen prüfen
                 $checkboxes = 0;
@@ -83,11 +83,11 @@ function checkInputfields($dbId,$sqlTable,$fields,$returnArray)
                     $pattern = str_replace(']',$regEx.']',$pattern);
                     $errortext = str_replace('sind','und '.$exCharReg.' sind',$errortext);
                 }
-                if( preg_match($pattern,$_POST['input_'.$id]) )
+                if( preg_match($pattern,$_POST[$id]) )
                 {
                     $returnArray[0] = FALSE;
-                    $returnArray['class']['input_'.$id] = 'errorField';
-                    $returnArray['text']['input_'.$id] = $errortext;
+                    $returnArray['class'][$id] = 'errorField';
+                    $returnArray['text'][$id] = $errortext;
                 }
             }
         }
@@ -102,11 +102,11 @@ function checkSelectfields($fields,$returnArray)
     {
         if( $id != '' )
         {
-            if( empty($_POST['dropdown_'.$id]) )
+            if( empty($_POST[$id]) )
             {
                 $returnArray[0] = FALSE;
-                $returnArray['class']['dropdown_'.$id] = 'errorSelectfield';
-                $returnArray['text']['dropdown_'.$id] = 'Es muß eine Auswahl erfolgen!';
+                $returnArray['class'][$id] = 'errorSelectfield';
+                $returnArray['text'][$id] = 'Es muß eine Auswahl erfolgen!';
             }
         }
     }
@@ -169,15 +169,14 @@ function checkFieldChars($fieldName,$allowedChars,$errorText,$returnArray)
 
 //@$fielddata array
 //@$dataarray array
-//@$fieldtype string
 //@return string
-function inputfielddata_to_inputdata($fielddata,$dataarray,$fieldtype)
+function inputfielddata_to_inputdata($fielddata,$dataarray)
 {
     foreach( $fielddata as $id )
     {
         if( $id != '' )
         {
-            $inputdata .= "#".$id.";".$dataarray[$fieldtype.$id]."#";
+            $inputdata .= "#".$id.";".$dataarray[$id]."#";
         }
     }
     return $inputdata;
@@ -185,13 +184,12 @@ function inputfielddata_to_inputdata($fielddata,$dataarray,$fieldtype)
 
 //@$fielddata string
 //@$dataarray array
-//@$fieldtype string
 //@return array
-function inputfielddata_to_inputfields($fielddata,$dataarray,$fieldtype)
+function inputfielddata_to_inputfields($fielddata,$dataarray)
 {
     foreach( explode('##',$fielddata) as $value )
     {
-        $dataarray[$fieldtype.substr(trim($value,'#'),'0',strpos(trim($value,'#'),';'))] = ltrim(strstr(trim($value,'#'),';'),';');
+        $dataarray[substr(trim($value,'#'),'0',strpos(trim($value,'#'),';'))] = ltrim(strstr(trim($value,'#'),';'),';');
     }
     return $dataarray;
 }
