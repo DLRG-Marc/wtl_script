@@ -13,8 +13,8 @@
 /* General Public License for more details */
 /* at <http://www.gnu.org/licenses/>. */
 /**/
-/* @WTL version  1.5.0 */
-/* @date - time  01.10.2013 - 19:00 */
+/* @WTL version  1.6.0 */
+/* @date - time  15.03.2015 - 19:00 */
 /* @copyright    Marc Busse 2012-2020 */
 /* @author       Marc Busse <http://www.eutin.dlrg.de> */
 /* @license      GPL */
@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS `wtl_lists` (
   `entryMail` mediumtext NOT NULL,
   `entryLimit` int(10) unsigned NOT NULL DEFAULT '20',
   `connectFields` text NOT NULL,
+  `infoMail` mediumtext NOT NULL,
   `viewRegister` text NOT NULL,
   `viewEntry` text NOT NULL,
   `viewStatistic` text NOT NULL,

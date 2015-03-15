@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.6.0
+ * @date - time  15.03.2015 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -48,23 +48,26 @@
             $ok_message = 'Die Beispieldaten wurden erfolgreich erstellt.';
             $message = 'Die Erstellung der Beispieldaten ist fehlgeschlagen!';
         }
+        if( isset($_POST['updateTables']) )
+        {
+            $file = $GLOBALS['SYSTEM_SETTINGS']['GLOBAL_PATH'].'/intern/wtl_updates.sql';
+            $ok_message = 'Das Update der Tabellen auf '.VERSION.' war erfolgreich.';
+            $message = 'Das Update der Tabellen ist fehlgeschlagen!';
+        }
         // Berechtigung der wtl_globals prüfen
-        if( substr(decoct(fileperms($GLOBALS['SYSTEM_SETTINGS']['GLOBAL_PATH'].'/wtl_globals.php')),2) != '0666' )
+        if( substr(decoct(fileperms($GLOBALS['SYSTEM_SETTINGS']['GLOBAL_PATH'].'/'.$GLOBALS['SYSTEM_SETTINGS']['GLOBAL_FILENAME'])),2) != '0666' )
         {
             $message = "<p><b>ACHTUNG:<br/>Die Datei wtl_globals.php braucht Schreibrechte, bitte Rechte auf 0666 ändern!</b></p>
                 <p><a href='".$script_url."'>zurück zu den Einstellungen.</a></p>";
         }
         if( isset($_POST['createTables']) || isset($_POST['createData']) )
         {
-            if( makeSQLtableFormSQLdata($dbId,$file)=== TRUE )
+            if( makeSQLtableFormSQLdata($dbId,$file,FALSE) === TRUE )
             {
                 $message = $ok_message;
                 if( isset($_POST['createTables']) )
                 {
                     changeGlobals("['INSTALL']['TABLESCREATED']","FALSE","TRUE");
-                }
-                if( isset($_POST['createData']) )
-                {
                     changeGlobals("['INSTALL']['FIRSTINSTALL']","TRUE","FALSE");
                 }
             }
@@ -76,6 +79,14 @@
             unlink($GLOBALS['SYSTEM_SETTINGS']['GLOBAL_PATH']."/".$GLOBALS['SYSTEM_SETTINGS']['CONTENT_PATH']."menu.inc");
             rename($GLOBALS['SYSTEM_SETTINGS']['GLOBAL_PATH']."/".$GLOBALS['SYSTEM_SETTINGS']['CONTENT_PATH']."menu_.inc",$GLOBALS['SYSTEM_SETTINGS']['GLOBAL_PATH']."/".$GLOBALS['SYSTEM_SETTINGS']['CONTENT_PATH']."menu.inc");
             chmod($GLOBALS['SYSTEM_SETTINGS']['GLOBAL_PATH']."/".$GLOBALS['SYSTEM_SETTINGS']['CONTENT_PATH']."menu.inc",0644);
+        }
+        if( isset($_POST['updateTables']) && ($GLOBALS['INSTALL']['TABLESUPDATED'] !== TRUE))
+        {
+            if( makeSQLtableFormSQLdata($dbId,$file,VERSION) === TRUE )
+            {
+                $message = $ok_message;
+                changeGlobals("['INSTALL']['TABLESUPDATED']","FALSE","TRUE");
+            }
         }
 
         if( $message != '' )
@@ -95,6 +106,9 @@
                     </td>
                     <td>
                         <input class='button' type='submit' name='createData' value='Beispieldaten &#xA; erstellen'/>
+                    </td>
+                    <td>
+                        <input class='button' type='submit' name='updateTables' value='Tabellen &#xA; updaten'/>
                     </td>
                 </tr>
             </table>

@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.2
- * @date - time  08.04.2014 - 19:00
+ * @WTL version  1.6.0
+ * @date - time  15.03.2015 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -187,22 +187,23 @@
                 $titel = "<h1>".$titel_pdf."</h1>"; 
                 $headline_pdf = '';
                 $headline = "<p><b>".$headline_pdf."</b></p>";
-                $button = "<p><input class='button' type='submit' name='register' value='Aufnehmen'/>";
-                $button .= "<input class='button' type='reset' name='cancel' value='abbrechen' onclick=\"location.href='".$script_url."'\"/>";
-                $button .= "<input type='hidden' name='age' value='".$_POST['age']."'/>";
-                $button .= "<input type='hidden' name='limit' value='".$_POST['limit']."'/>";
-                $button .= "<input type='hidden' name='answerdate' value='".$_POST['answerdate']."'/>";
-                $button .= "<input type='hidden' name='startdate' value='".$_POST['startdate']."'/>";
-                $button .= "<input type='hidden' name='listId' value='".$listID."'/>";
-                $button .= "<input type='hidden' name='entryId' value='".$_POST['entryId']."'/>";
+                $textBefore = "<p><input class='button' type='submit' name='register' value='Aufnehmen'/>";
+                $textBefore .= "<input class='button' type='reset' name='cancel' value='abbrechen' onclick=\"location.href='".$script_url."'\"/>";
+                $textBefore .= "<input type='hidden' name='age' value='".$_POST['age']."'/>";
+                $textBefore .= "<input type='hidden' name='limit' value='".$_POST['limit']."'/>";
+                $textBefore .= "<input type='hidden' name='answerdate' value='".$_POST['answerdate']."'/>";
+                $textBefore .= "<input type='hidden' name='startdate' value='".$_POST['startdate']."'/>";
+                $textBefore .= "<input type='hidden' name='listId' value='".$listID."'/>";
+                $textBefore .= "<input type='hidden' name='entryId' value='".$_POST['entryId']."'/>";
                 foreach( $connectFields[1] as $id )
                 {
-                    $button .= "<input type='hidden' name='".$id."' value='".$_POST[$id]."'/>";
+                    $textBefore .= "<input type='hidden' name='".$id."' value='".$_POST[$id]."'/>";
                 }
-                $button .= "</p><p>Jede Rückmeldung der Aufnahme sofort per Mail zusenden :&nbsp;&nbsp;&nbsp;
+                $textBefore .= "</p><p>Jede Rückmeldung der Aufnahme sofort per Mail zusenden :&nbsp;&nbsp;&nbsp;
                     <input class='".$fieldClass['entryConfMail']."' type='checkbox' name='entryConfMail' value='1' checked='checked'/></p>";
                 $displayMessage = TRUE;
-                wtl_make_site_view($dbId,'ENTRY',$result,$listID,$quantity,'1','+1',$titel,$headline,$button,$script_url,FALSE,FALSE);
+                $buttons = array();
+                wtl_make_site_view($dbId,'ENTRY',$result,$listID,$quantity,'1','+1',$titel,$headline,$textBefore,'',$buttons);
             }
             // wenn Eingaben fehlerhaft
             else
@@ -250,7 +251,7 @@
                     $headline_pdf = "Aufnahmezeit : ".date("d.m.Y  H:i:s").";Aufnehmender : ".$username.";Antwortdatum : ".$_POST['answerdate'].
                         ";Schwimmstart : ".$_POST['startdate'].";";
                     $headline = "<p><b>".str_replace(';','<br/>',$headline_pdf)."</b></p>";
-                    $button .= "<p><input class='button' type='button' name='to_start' value='weitere&#10;aufnehmen'
+                    $textBefore .= "<p><input class='button' type='button' name='to_start' value='weitere&#10;aufnehmen'
                         onclick=\"window.location.href='".$script_url."'\"/></p>";
                     $result_view = mysql_query("SELECT * FROM wtl_members WHERE entryId != '' AND id = '".$id_all."'", $dbId);
                     // email vorbereiten
@@ -324,7 +325,9 @@
                             substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'/',1)+1).$GLOBALS['SYSTEM_SETTINGS']['WTL_CONFIRMED_URL'].
                             '&confirmedId='.$_POST['entryId'].'>';
                         $mailtext = "Hallo ".$username."\n\nMit dem folgenden Link kannst Du die Rückmeldungen Deiner Aufnahme vom ".date('d.m.Y').
-                            " aus der Warteliste ".$listName." einsehen:\n".$confirmedLink."\n\n\nDiese Mail erhältst Du aufgrund einer Aufnahme aus dem Wartelistensystem der ".$dlrgName;
+                            " aus der Warteliste ".$listName." einsehen:\n".$confirmedLink."\n\nACHTUNG: Dieser Link funktioniert nur dann korrekt,".
+                            " wenn du NICHT in der Wartelistensystem angemeldet bist!\n\n\n".
+                            "Diese Mail erhältst Du aufgrund einer Aufnahme aus dem Wartelistensystem der ".$dlrgName;
                         send_mail($mailadress,$usermail,$dlrgName.' Deine Aufnahmen aus der Warteliste '.$listName,$mailtext);
                         $headline .= "<p><b>Dir wurde eine Mail zugesandt, mit der Du die Rückmeldungen zu dieser Aufnahme einsehen kannst.</b></p>";
                     }
@@ -344,7 +347,8 @@
                     }
                     $displayMessage = TRUE;
                     mysql_data_seek($result_view,0);
-                    wtl_make_site_view($dbId,'ENTRY',$result_view,$listID,$quantity,'1','+1',$titel,$headline,$button,$script_url,FALSE,FALSE);
+                    $buttons = array();
+                    wtl_make_site_view($dbId,'ENTRY',$result_view,$listID,$quantity,'1','+1',$titel,$headline,$textBefore,'',$buttons);
                 }
             }
         }

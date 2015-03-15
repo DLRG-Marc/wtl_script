@@ -15,15 +15,15 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.2
- * @date - time  23.04.2014 - 19:00
+ * @WTL version  1.6.0
+ * @date - time  15.03.2015 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
  */
 
 
-function wtl_make_site_view($dbId,$site,$result,$listId,$quantity,$number,$updown,$titel,$headline,$button,$delButton,$mailButton)
+function wtl_make_site_view($dbId,$site,$result,$listId,$quantity,$number,$updown,$titel,$headline,$textBefore,$textAfter,$buttons)
 {
     if( strpos($_SERVER['REQUEST_URI'],'&') === FALSE )
     {
@@ -35,7 +35,7 @@ function wtl_make_site_view($dbId,$site,$result,$listId,$quantity,$number,$updow
     }
     echo "<div class='wtl_moveable_table'>";
     echo $titel;
-    if( ($quantity != 0) && $result )
+    if( ($quantity != 0) && ($result != FALSE) )
     {
         echo $headline;
         // Daten für html-Tabelle (Überschrift)
@@ -47,6 +47,10 @@ function wtl_make_site_view($dbId,$site,$result,$listId,$quantity,$number,$updow
                 $rows[0] = array('Nr','Datum','Name','Vorname','Alter');
                 $listedFields = 'viewRegister';
             break;
+            case 'MOVELIST':
+                $rows[0] = array('<input type="checkbox" name="checkall" onclick="check_all(\'selected[]\', this)"/></legend>','Nr','Datum','Name','Vorname','Alter');
+                $listedFields = 'viewRegister';
+            break;
             case 'ENTRY':
                 $rows[0] = array('','Nr','Datum','Name','Vorname','Alter');
                 $listedFields = 'viewEntry';
@@ -54,7 +58,6 @@ function wtl_make_site_view($dbId,$site,$result,$listId,$quantity,$number,$updow
             case 'STATISTIC':
                 $rows[0] = array('Nr','Anzahl','Datum','Aufnehmender');
                 $listedFields = 'viewStatistic';
-                $exportButton = TRUE;
             break;
             case 'STATISTIC_DETAILS':
                 $rows[0] = array('Nr','Eingetragen','Name','Vorname','Antw.','e-mail');
@@ -64,64 +67,57 @@ function wtl_make_site_view($dbId,$site,$result,$listId,$quantity,$number,$updow
         // Felder die zum anzeigen ausgewählt wurden
         $returnValues = namesFromSelFields($dbId,'wtl',$listId,$listedFields,$rows[0]);
         $rows[0] = $returnValues[1];
-        // ggf. Leerfeld für Button zum Löschen
-        if( ($delButton === TRUE) || ($exportButton === TRUE) )
+        // ggf. Leerfelder für Buttons
+        foreach( $buttons as $button )
         {
-            $rows[0][] = '';
-        }
-        if( $mailButton === TRUE )
-        {
-            $rows[0][] = '';
+            $rows[0][] = $button['headline'];
         }
         // Daten für html-Tabelle (Inhalt)
         // Felder die immer angezeigt werden
         $i = 1;
-        while( $daten = mysql_fetch_object($result) )
+        while( $data = mysql_fetch_object($result) )
         {
             switch( $site )
             {
                 case'REGISTER':
-                    $rows[$i] = array($number,date('d.m.y',$daten->tstamp),"<a href='".substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'=')).
-                        "=wtl_view_member&amp;data=view&amp;listID=".$listId."&amp;memberID=".$daten->id."'>".htmlspecialchars_decode($daten->lastname)."</a>",
-                        htmlspecialchars_decode($daten->firstname),calcAge(date('Y-m-d',$daten->dateOfBirth)));
+                    $rows[$i] = array($number,date('d.m.y',$data->tstamp),"<a href='".substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'=')).
+                        "=wtl_view_member&amp;data=view&amp;listID=".$listId."&amp;memberID=".$data->id."'>".htmlspecialchars_decode($data->lastname)."</a>",
+                        htmlspecialchars_decode($data->firstname),calcAge(date('Y-m-d',$data->dateOfBirth)));
+                break;
+                case'MOVELIST':
+                    $rows[$i] = array("<input type='checkbox' name='selected[]' value='".$data->id."'/>",$number,date('d.m.y',$data->tstamp),
+                        "<a href='".substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'='))."=wtl_view_member&amp;data=view&amp;listID=".$listId.
+                        "&amp;memberID=".$data->id."'>".htmlspecialchars_decode($data->lastname)."</a>",htmlspecialchars_decode($data->firstname),
+                        calcAge(date('Y-m-d',$data->dateOfBirth)));
                 break;
                 case 'ENTRY':
-                    $rows[$i] = array("<input type='checkbox' name='selected[]' value='".$daten->id."' checked='checked'/>",$number,
-                        date('d.m.y',$daten->tstamp),htmlspecialchars_decode($daten->lastname),htmlspecialchars_decode($daten->firstname),
-                        calcAge(date('Y-m-d',$daten->dateOfBirth)));
+                    $rows[$i] = array("<input type='checkbox' name='selected[]' value='".$data->id."' checked='checked'/>",$number,
+                        date('d.m.y',$data->tstamp),htmlspecialchars_decode($data->lastname),htmlspecialchars_decode($data->firstname),
+                        calcAge(date('Y-m-d',$data->dateOfBirth)));
                 break;
                 case 'STATISTIC':
-                    $result_count = mysql_query("SELECT COUNT(*) FROM wtl_members WHERE deleted != '1' AND entryId = '".$daten->entryId."'");
-                    $quantityStatisticArray = mysql_fetch_row($result_count);
-                    $rows[$i] = array($number,"<a href='".$script_url."&amp;listId=".$listId."&amp;detno=".$number."&amp;entryId=".$daten->entryId."'>".
-                        $quantityStatisticArray[0]."&nbsp;&nbsp;(Details)</a>",date('d.m.y',$daten->entryTstamp),htmlspecialchars_decode($daten->entryUsername));
+                    $result_count = mysql_result(mysql_query("SELECT COUNT(*) FROM wtl_members WHERE deleted != '1' AND entryId = '".$data->entryId."'"),0);
+                    $rows[$i] = array($number,"<a href='".$script_url."&amp;listId=".$listId."&amp;detno=".$number."&amp;entryId=".$data->entryId."'>".
+                        $result_count."&nbsp;&nbsp;(Details)</a>",date('d.m.y',$data->entryTstamp),htmlspecialchars_decode($data->entryUsername));
                 break;
                 case 'STATISTIC_DETAILS':
-                    $rows[$i] = array($number,date('d.m.y',$daten->tstamp),"<a href='".substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'=')).
-                    "=wtl_view_member&amp;data=view&amp;listID=".$listId."&amp;memberID=".$daten->id."'>".htmlspecialchars_decode($daten->lastname)."</a>",
-                    htmlspecialchars_decode($daten->firstname),number_to_janein($daten->confirm),htmlspecialchars_decode($daten->mail));
+                    $rows[$i] = array($number,date('d.m.y',$data->tstamp),"<a href='".substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'=')).
+                    "=wtl_view_member&amp;data=view&amp;listID=".$listId."&amp;memberID=".$data->id."'>".htmlspecialchars_decode($data->lastname)."</a>",
+                    htmlspecialchars_decode($data->firstname),number_to_janein($data->confirm),htmlspecialchars_decode($data->mail));
                 break;
             }
             // Felder die zum anzeigen ausgewählt wurden
-            $viewFields = array_merge(explode('##',$daten->inputs),explode('##',$daten->selected));
+            $viewFields = array_merge(explode('##',$data->inputs),explode('##',$data->selected));
             $rows[$i] = dataFromSelFields($dbId,'wtl',$returnValues[0],$viewFields,$rows[$i]);
-            if( $delButton === TRUE )
+            foreach( $buttons as $button )
             {
-                $rows[$i][] = "<input class='button' type='button' name='predelete' value='Person löschen' onclick=\"location.href='".$script_url."&amp;listID=".$listId."&amp;delID=".$daten->id."'\"/>";
-            }
-            if( $exportButton === TRUE )
-            {
-                $rows[$i][] = "<input class='button' type='button' name='export' value='exportieren' onclick=\"location.href='".str_replace('wtl_stat','wtl_upload',$_SERVER['REQUEST_URI'])."&amp;listID=".$listId."&amp;entryID=".$daten->entryId."'\"/>";
-            }
-            if( $mailButton === TRUE )
-            {
-                $rows[$i][] = "<input class='button_long' type='button' name='sendmail' value='Anmeldemail erneut senden' onclick=\"location.href='".$script_url."&amp;listID=".$listId."&amp;mailID=".$daten->id."'\"/>";
+                $rows[$i][] = "<input class='".$button['class']."' type='button' name='".$button['name']."' value='".$button['value']."' onclick=\"location.href='".$button['action']['value'].$data->$button['action']['mysqlcol']."'\"/>";
             }
             $number = $number + $updown;
             $i++;
         }
         echo "<form name='preview_form' method='post' action='".htmlspecialchars($_SERVER['REQUEST_URI'])."'>";
-        makeTable($rows,$button,'');
+        makeTable($rows,$textBefore,$textAfter);
         echo "</form>";
     }
     else
@@ -133,7 +129,7 @@ function wtl_make_site_view($dbId,$site,$result,$listId,$quantity,$number,$updow
 }
 
 
-function wtl_make_site_confirmed($conf,$result,$quantity,$headline,$button)
+function wtl_make_site_confirmed($conf,$result,$quantity,$headline,$textBefore)
 {
     if( ($quantity != 0) && $result )
     {
@@ -144,7 +140,7 @@ function wtl_make_site_confirmed($conf,$result,$quantity,$headline,$button)
         // Daten für html-Tabelle (Inhalt)
         $number = $quantity;
         $i = 1;
-        while( $daten = mysql_fetch_object($result) )
+        while( $data = mysql_fetch_object($result) )
         {
             if( $conf == 0 )
             {
@@ -152,14 +148,14 @@ function wtl_make_site_confirmed($conf,$result,$quantity,$headline,$button)
             }
             else
             {
-                $confdate = date('d.m.y',$daten->confirmTstamp);
+                $confdate = date('d.m.y',$data->confirmTstamp);
             }
-            $rows[$i] = array($number,$confdate,htmlspecialchars_decode($daten->lastname),
-                htmlspecialchars_decode($daten->firstname),number_to_janein($daten->confirm));
+            $rows[$i] = array($number,$confdate,htmlspecialchars_decode($data->lastname),
+                htmlspecialchars_decode($data->firstname),number_to_janein($data->confirm));
             $number--;
             $i++;
         }
-        makeTable($rows,$button,'');
+        makeTable($rows,$textBefore,'');
         echo "<p></p>";
     }
 }
@@ -194,6 +190,93 @@ function send_register_mail($dbId,$memberID,$senderadress,$registerMail,$dlrgNam
         }
         $retarray[0] = send_mail($senderadress,$data->mail,$dlrgName.' Wartelisteneintrag '.$listName,$mailtext);
         $retarray[1] = $data->firstname." ".$data->lastname;
+    }
+    return $retarray;
+}
+
+function send_entry_mail($dbId,$send,$entryMail,$mailadress,$result_view,$subtext,$listName,$dlrgName,$username,$usermail,$userphone)
+{
+    $retarray = array();
+    $count = 1;
+    // email vorbereiten
+    $PhFix = array('#MELDEDATUM#','#VORNAME#','#NACHNAME#','#GEBDATUM#','#LISTENNAME#','#DLRGNAME#', '#MELDENR#',
+        '#STARTDATUM#','#ANTWORTDATUM#','#AUFNEHMER#','#AUFNEHMERMAIL#','#AUFNEHMERTEL#','#BESTAETIGUNGSLINK#');
+    $matchcount = preg_match_all('/#\w+#/',$entryMail,$matches);
+    $fieldmatches = array_diff($matches[0],$PhFix);
+    if( count($fieldmatches) > 0 )
+    {
+        $field = array();
+        foreach( $fieldmatches as $setName )
+        {
+            $result = mysql_query("SELECT id, setNo, xChecked, fieldType FROM wtl_fields WHERE isSet = '1' AND
+                setName = '".trim($setName,'#')."'", $dbId);
+            $field[] = mysql_fetch_row($result);
+        }
+    }
+    while( $daten = mysql_fetch_object($result_view) )
+    {
+        $confirmLink = '<http://www.'.str_replace(array('www.','http://'),'',$_SERVER['SERVER_NAME']).
+            substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'/',1)+1).$GLOBALS['SYSTEM_SETTINGS']['WTL_REGISTER_URL'].
+            $listID.'&data=confirm&entryToken='.base64_encode($daten->registerId.$daten->entryId).'>';
+        $fixReplace = array(date('d.m.Y',$daten->tstamp),$daten->firstname,$daten->lastname,date('d.m.Y',$daten->dateOfBirth),
+            $listName,$dlrgName,$daten->registerId,date('d.m.Y',$daten->startTstamp),date('d.m.Y',$daten->answerTstamp),
+            $username,$usermail,$userphone,$confirmLink);
+        $mailtext = str_replace($PhFix,$fixReplace,$entryMail);
+        $fc = 0;
+        while( count($field) > $fc )
+        {
+            if( $field[$fc][2] == '1' )
+            {
+                if( $field[$fc][3] == 'input' )
+                {
+                    $value = $MYSQL[$field[$fc][0]];
+                }
+                else
+                {
+                    $result = mysql_query("SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
+                        setNo = '".$field[$fc][1]."' AND data = '".$MYSQL[$field[$fc][0]]."'", $dbId);
+                    $label = mysql_fetch_row($result);
+                    $value = $label[0];
+                }
+            }
+            else
+            {
+                $result = mysql_query("SELECT inputs, selected FROM wtl_members WHERE id = '".$daten->id."'", $dbId);
+                $data_m = mysql_fetch_row($result);
+                if( $field[$fc][3] == 'input' )
+                {
+                    $inputs = parse_inputs($data_m[0]);
+                    $value = $inputs[$field[$fc][0]];
+                }
+                else
+                {
+                    $inputs = parse_inputs($data_m[1]);
+                    $result = mysql_query("SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
+                        setNo = '".$field[$fc][1]."' AND data = '".$inputs[$field[$fc][0]]."'", $dbId);
+                    $label = mysql_fetch_row($result);
+                    $value = $label[0];
+                }
+            }
+            $varReplace[] = $value;
+            $fc++;
+        }
+        $mailtext = str_replace($fieldmatches,$varReplace,$mailtext);
+        if( $send === TRUE )
+        {
+            $retarray[0] = send_mail($mailadress,$daten->mail,$dlrgName.' '.$subtext.' '.$listName,$mailtext);
+            $retarray[1] = $count;
+        }
+        else
+        {
+            if( $count == 1 )
+            {
+                $searcharr = array('<','>');
+                $mailtext = str_replace($searcharr,'',$mailtext);
+                $retarray[0] = 'BETREFF:<br>'.$dlrgName.' '.$subtext.' '.$listName.'<br>';
+                $retarray[1] = 'MAILTEXT:<br>'.nl2br($mailtext).'<br>';
+            }
+        }
+        $count += 1;
     }
     return $retarray;
 }

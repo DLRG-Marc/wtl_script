@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.6.0
+ * @date - time  03.05.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -51,6 +51,7 @@
             $_DLRG_SYS['get']='wtl_intern'; include_once($_DLRG_PATH['content'].$_DLRG_SYS['get'].".inc"); } }
         if($_GET['login']=='logout'){ $_SESSION = array(); session_destroy();
             $_DLRG_SYS['get']='wtl_logout'; include_once($_DLRG_PATH['content'].$_DLRG_SYS['get'].".inc"); }
+        $img_path = $GLOBALS['SYSTEM_SETTINGS']['GRAPHIC_PATH'];
 ?>
 
 
@@ -88,6 +89,7 @@
 
         //-->
         </style>
+        <script type="text/javascript" language="javascript" src="js/f_global.js"></script>
         <link rel="home" title="Home" href="<?php echo $_DLRG_SYS['call'].$_DLRG_INC['start']; ?>" />
 </head>
 
@@ -137,7 +139,8 @@
                    <a class="menuitem" id="i0101" href="index.php?doc=swm_change_pw">Passwort ändern</a>
                  <?php }; ?></div>
                  <?php if( ($_SESSION['intern']['loggedIn']===TRUE) || ($_SESSION['extern']['loggedIn']===TRUE) ){?>
-                   <div id="userlogout"><input class='button' type='button' name='sendLogout' value='Logout' onclick="location.href='<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>&amp;login=logout'"/></div>
+                   <div id="userlogout"><a class='logout_img' title='logout' href='<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>&amp;login=logout'>
+                     <img width='16' height='16' alt='logout' src='<?php echo $img_path."logout.png"; ?>'></a></div>
                  <?php }; ?>
                  <?php if(isset($_DLRG_MENU['other']) && $_DLRG_MENU['other']!=""){?>
                    <div id="menuads"><?php include($_DLRG_PATH['content'].$_DLRG_MENU['other'].".inc"); ?></div>

@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.6.0
+ * @date - time  15.03.2015 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -41,13 +41,18 @@
     $authorityDelete = FALSE;
     $authorityMail = FALSE;
     $username = $_SESSION['intern']['realname'];
+    $buttons = array();
+    $textBefore = '';
 
+    // Auswahlarray sichern bevor durch Cross-Side Script schutz zerstört
+    $_POST['selected'] = serialize($_POST['selected']);
     // Schutzmechanismus gegen Cross-Side Scripting
     foreach( $_POST as $index => $val )
     {
         $_POST[$index] = trim(htmlspecialchars( $val, ENT_NOQUOTES, UTF-8 ));
         $MYSQL[$index] = mysql_real_escape_string($_POST[$index]);
     }
+    $_POST['selected'] = unserialize($_POST['selected']);
     if( empty($listID) )
     {
         $listID = $MYSQL['listId'];
@@ -58,22 +63,164 @@
     $authorityDelete = checkAuthority($dbId,'wtl_user','deleteAuth',$listID);
     $authorityMail = checkAuthority($dbId,'wtl_user','admin',$listID);
 
+    if( $authorityDelete === TRUE )
+    {
+        $buttons[] = array('headline'=>'', 'class'=>'button', 'name'=>'predelete', 'value'=>'Person löschen',
+                            'action'=>array('value'=>$script_url."&amp;listID=".$listID."&amp;delID=", 'mysqlcol'=>'id'));
+    }
+    if( $authorityMail === TRUE )
+    {
+        $buttons[] = array('headline'=>'', 'class'=>'button_long', 'name'=>'sendmail', 'value'=>'Anmeldemail erneut senden',
+                            'action'=>array('value'=>$script_url."&amp;listID=".$listID."&amp;mailID=", 'mysqlcol'=>'id'));
+    }
+
     echo "<div id='wtl_view'>
           <div class='waitinglist'>";
     // Daten der wtl_lists lesen
-    $result = mysql_query("SELECT * FROM wtl_lists WHERE id = '".$listID."'",$dbId);
+    $result = mysql_query("SELECT setName, dlrgName, mailadress, registerMail, infoMail FROM wtl_lists WHERE id = '".$listID."'",$dbId);
     while( $daten = mysql_fetch_object($result) )
     {
         $listName = $daten->setName;
         $dlrgName = $daten->dlrgName;
         $mailadress = $daten->mailadress;
         $registerMail = html_entity_decode($daten->registerMail,ENT_QUOTES,'UTF-8');
+        $infoMail = html_entity_decode($daten->infoMail,ENT_QUOTES,'UTF-8');
     }
 
     if( $authority === TRUE )
     {
+        // nach verschieben in andere Liste vorbereiten
+        if( isset($_POST['preMoveList']) && ($authorityMail === TRUE) )
+        {
+            echo "<h1>Personen in eine andere Warteliste verschieben</h1>";
+            $id_all = array_to_text_with_trenner($_POST['selected'], "' OR id = '");
+            $result = mysql_query( "SELECT * FROM wtl_members WHERE listId = '".$listID."' AND (id = '".$id_all."')",$dbId);
+            $quantity = mysql_num_rows($result);
+            $headline = "<p><b>Diese Personen werden in die folgende auszuwählende Warteliste verschoben:</b></p>";
+            $textBefore = "<p><select name='newListID' size='1'>";
+            $result_lists = mysql_query("SELECT id, setName FROM wtl_lists WHERE id != '".$listID."'",$dbId);
+            while( $data = mysql_fetch_object($result_lists) )
+            {
+                $textBefore .= "<option value='".$data->id."'>".$data->setName."</option>";
+            }
+            $textBefore .= "</select></p>
+                <p><input class='button' type='submit' name='sendMoveList' value='verschieben'/>
+                <input class='button' type='button' name='cancel' value='Abbrechen' onclick=\"location.href='".$script_url."&amp;listID=".$listID."'\"/>
+                <input name='listId' type='hidden' value='".$listID."'/>
+                <input name='selected' type='hidden' value='".serialize($_POST['selected'])."'/></p>";
+            $buttons = array();
+            wtl_make_site_view($dbId,'REGISTER',$result,$listID,$quantity,$quantity,-1,'',$headline,$textBefore,'',$buttons);
+        }
+
+        // nach verschieben bestätigen
+        if( isset($_POST['sendMoveList']) && ($authorityMail === TRUE) )
+        {
+            echo "<h1>Personen in eine andere Warteliste verschieben</h1>";
+            $result_lists = mysql_query("SELECT setName FROM wtl_lists WHERE id = '".$MYSQL['newListID']."'",$dbId);
+            $newListName = mysql_fetch_row($result_lists);
+            $id_all = array_to_text_with_trenner(unserialize(stripslashes($_POST['selected'])), "' OR id = '");
+            $SQL_Befehl_Write = "UPDATE wtl_members SET listId = '".$MYSQL['newListID']."', lastEditor = '".$username."'
+                WHERE id = '".$id_all."'";
+            $result = mysql_query($SQL_Befehl_Write,$dbId);
+            $quantity = mysql_affected_rows($dbId);
+            if( $quantity >= 0 )
+            {
+                echo "<p><b>Es wurden ".$quantity." Personen in die Warteliste ".$newListName[0]." verschoben.</b></p>";
+                echo "<p><a href='".$script_url."'>zurück zur Wartelistenauswahl.</a></p>";
+            }
+            else
+            {
+                echo "<p><b>Das Verschieben ist fehlgeschlagen !<br/>Bitte wende Dich an den Webmaster.</b></p>";
+            }
+        }
+
+        // Email vorbereiten
+        if( isset($_POST['writeMail']) && ($authorityMail === TRUE) )
+        {
+            if( isset($_POST['selected']) )
+            {
+                echo "<h1>Email vorbereiten</h1>";
+                echo "<p>Emailtext:</p>";
+                echo "<form name='mailwrite_form' method='post' action='".htmlspecialchars($_SERVER['REQUEST_URI'])."'>";
+                echo "<p><textarea class='".$fieldClass['infoMail']."' name='infoMail' cols='34' rows='5'
+                    title='".$errorTitle['infoMail']."'>".$infoMail."</textarea></p>";
+                echo "<p><input class='button' type='submit' name='saveMail' value='Mail speichern'/>
+                    <input class='button' type='button' name='cancel' value='Abbrechen' onclick=\"location.href='".$script_url."&amp;listID=".$listID."'\"/>
+                    <input name='listId' type='hidden' value='".$listID."'/>
+                    <input name='selected' type='hidden' value='".serialize($_POST['selected'])."'/></p>";
+                echo "</form>";
+            }
+            else
+            {
+                echo "<h1>Personen eine Email schreiben</h1>";
+                echo"<p><b>Es sind wurden keine Daten ausgewählt !</b></p>";
+                echo "<p><a href='".$script_url."'>zurück zur Wartelistenauswahl.</a></p>";
+            }
+        }
+
+        // Email in DB speichern und Vorschau
+        if( isset($_POST['saveMail']) && ($authorityMail === TRUE) )
+        {
+            echo "<h1>Personen eine Email senden</h1>";
+            $SQL_Befehl_Write = "UPDATE wtl_lists SET infoMail = '".$MYSQL['infoMail']."' WHERE id = '".$listID."'";
+            $result = mysql_query($SQL_Befehl_Write, $dbId);
+            $infoMail = html_entity_decode($_POST['infoMail'],ENT_QUOTES,'UTF-8');
+            if( $result != FALSE )
+            {
+                $id_all = array_to_text_with_trenner(unserialize(stripslashes($_POST['selected'])), "' OR id = '");
+                $result_view = mysql_query( "SELECT * FROM wtl_members WHERE listId = '".$listID."' AND (id = '".$id_all."')",$dbId);
+                $quantity = mysql_num_rows($result_view);
+                $headline = "<p><b>An diese Personen wird die folgende Email gesendet:<br>Infomail am Beispiel des ersten Empfängers.</b></p>";
+                // Daten der wtl_user lesen
+                $result_user = mysql_query("SELECT id, mail, phone FROM wtl_user WHERE id = '".$_SESSION['intern']['userId']."'",$dbId);
+                while( $daten = mysql_fetch_object($result_user) )
+                {
+                    $usermail = $daten->mail;
+                    $userphone = $daten->phone;
+                }
+                $sendOK = send_entry_mail($dbId,FALSE,$infoMail,$mailadress,$result_view,'Information zur Warteliste',$listName,$dlrgName,$username,$usermail,$userphone);
+                $headline .= '<p>'.$sendOK[0].'<br>';
+                $headline .= $sendOK[1].'</p>';
+                $textBefore .= "<p><input class='button' type='submit' name='sendMail' value='Mail senden'/>
+                    <input class='button' type='button' name='cancel' value='Abbrechen' onclick=\"location.href='".$script_url."&amp;listID=".$listID."'\"/>
+                    <input name='listId' type='hidden' value='".$listID."'/>
+                    <input name='selected' type='hidden' value='".stripslashes($_POST['selected'])."'/></p>";
+                mysql_data_seek($result_view,0);
+                wtl_make_site_view($dbId,'REGISTER',$result_view,$listID,$quantity,$quantity,-1,'',$headline,$textBefore,'',$buttons);
+            }
+            else
+            {
+                echo "<p><b>Fehler beim speichern der Mail !</b></p>";
+                echo "<p><a href='".$script_url."'>zurück zur Wartelistenauswahl.</a></p>";
+            }
+        }
+
+        // Mail senden
+        if( isset($_POST['sendMail']) && ($authorityMail === TRUE) )
+        {
+            // Daten der wtl_user lesen
+            $result = mysql_query("SELECT id, mail, phone FROM wtl_user WHERE id = '".$_SESSION['intern']['userId']."'",$dbId);
+            while( $daten = mysql_fetch_object($result) )
+            {
+                $usermail = $daten->mail;
+                $userphone = $daten->phone;
+            }
+            echo "<h1>Personen eine Infomail zusenden</h1>";
+            $id_all = array_to_text_with_trenner(unserialize(stripslashes($_POST['selected'])), "' OR id = '");
+            $result_view = mysql_query( "SELECT * FROM wtl_members WHERE listId = '".$listID."' AND (id = '".$id_all."')",$dbId);
+            $sendOK = send_entry_mail($dbId,TRUE,$infoMail,$mailadress,$result_view,'Information zur Warteliste',$listName,$dlrgName,$username,$usermail,$userphone);
+            if( ($sendOK[0] == TRUE) && ($sendOK[1] > 0) )
+            {
+                echo "<p><b>Es wurde ".$sendOK[1]." Personen eine Infomail gesendet.</b></p>";
+            }
+            else
+            {
+                echo "<p><b>Das Senden der Infomail ist fehlgeschlagen !<br/>Bitte wende Dich an den Webmaster.</b></p>";
+            }
+        }
+
         // nach Anmeldemail erneut senden
-        if( (!empty($mailID)) && ($authorityMail === TRUE) )
+        if( !empty($mailID) && ($authorityMail === TRUE) )
         {
             $sendOK = send_register_mail($dbId,$mailID,$mailadress,$registerMail,$dlrgName,$listName);
             echo "<h1>Anmeldemail erneut zusenden</h1>";
@@ -86,24 +233,27 @@
                 echo "<p><b>Das Senden der Anmeldemail für ".$sendOK[1]." ist fehlgeschlagen!</b></p>";
             }
         }
+
         // nach löschen vorbereiten
-        if( (!empty($delID)) && ($authorityDelete === TRUE) )
+        if( !empty($delID) && !isset($_POST['sendDelete']) && ($authorityDelete === TRUE) )
         {
             echo "<h1>Person aus der Warteliste ".$listName." löschen</h1>";
             $result = mysql_query("SELECT * FROM wtl_members WHERE id = '".$delID."'",$dbId);
             $quantity = mysql_num_rows($result);
             $headline = "<p><b>Willst Du diese Person wirklich aus der Warteliste löschen ?</b></p>";
-            $buttons = "<p><input class='button' type='submit' name='sendDelete' value='Löschen'/>
+            $textBefore = "<p><input class='button' type='submit' name='sendDelete' value='Löschen'/>
                 <input class='button' type='button' name='cancel' value='Abbrechen' onclick=\"location.href='".$script_url."&amp;listID=".$listID."'\"/>
                 <input name='deleteId' type='hidden' value='".$delID."'/>
                 <input name='listId' type='hidden' value='".$listID."'/></p>";
-            wtl_make_site_view($dbId,'REGISTER',$result,$listID,$quantity,$quantity,'-1','',$headline,$buttons,FALSE,FALSE);
+            $buttons = array();
+            wtl_make_site_view($dbId,'REGISTER',$result,$listID,$quantity,1,-1,'',$headline,$textBefore,'',$buttons);
         }
         if( (!empty($delID)) && ($authorityDelete !== TRUE) )
         {
             echo "<h1>Personen aus der Warteliste '".$listName."' löschen</h1>
                 <p><b>Du hast keine Berechtigung zum Löschen aus dieser Warteliste!</b></p>";
         }
+
         // nach löschen bestätigen
         if( isset($_POST['sendDelete']) )
         {
@@ -120,8 +270,10 @@
                 echo "<p><b>Das Löschen ist fehlgeschlagen !<br/>Bitte wende Dich an den Webmaster.</b></p>";
             }
         }
+
         // nach erfolgter Auswahl
-        if( (!empty($listID)) && (empty($delID)) && !(isset($_POST['sendDelete'])) )
+        if( !empty($listID) && empty($delID) && empty($mailID) && !isset($_POST['sendDelete']) && !isset($_POST['preMoveList'])
+            && !isset($_POST['sendMoveList']) && !isset($_POST['writeMail']) && !isset($_POST['saveMail']) && !isset($_POST['sendMail']) )
         {
             if( isset($_POST['search']) )
             {
@@ -132,45 +284,55 @@
                 $titel = "Ansicht aller Personen der Warteliste ".$listName;
             }
             echo "<h1>".$titel."</h1>";
-            $headline = "Einen Wartenden suchen";
             $hiddenFields = "<input name='listId' type='hidden' value='".$listID."'/>";
             $condition = "entryId = '' AND deleted != '1'";
-            $result = searchText('wtl_members',$headline,$hiddenFields,$condition,'lastname','firstname','Nachname','Vorname');
+            $result = searchText('wtl_members','Einen Wartenden suchen',$hiddenFields,$condition,'lastname','firstname','Nachname','Vorname');
             // wenn suchen aktiviert
             if( isset($_POST['search']) )
             {
                 $quantity = mysql_num_rows($result);
                 if( $quantity == 1)
                 {
-                    $headline_pdf = 'Die folgende Person entspricht den Suchkriterien :';
+                    $headline = 'Die folgende Person entspricht den Suchkriterien :';
                 }
                 else
                 {
-                    $headline_pdf = 'Die folgenden '.$quantity.' Personen entsprechen den Suchkriterien :';
+                    $headline = 'Die folgenden '.$quantity.' Personen entsprechen den Suchkriterien :';
                 }
             }
             else
             {
-                $headline_pdf = '';
                 $result = mysql_query("SELECT * FROM wtl_members WHERE entryId = '' AND deleted != '1' AND listId = '".$listID."'
                     ORDER by tstamp DESC, id DESC",$dbId);
                 $quantity = mysql_num_rows($result);
                 if( $quantity == 1)
                 {
-                    $headline_pdf = "Die folgende Person wartet auf Aufnahme:";
+                    $headline = "Die folgende Person wartet auf Aufnahme:";
                 }
                 else
                 {
-                    $headline_pdf = "Die folgenden ".$quantity." Personen warten auf Aufnahme:";
+                    $headline = "Die folgenden ".$quantity." Personen warten auf Aufnahme:";
                 }
             }
-            $headline = "<p><b>".$headline_pdf."</b></p>";
+            $headline = "<p><b>".$headline."</b></p>";
             // Seitenaufbau aufrufen
-            wtl_make_site_view($dbId,'REGISTER',$result,$listID,$quantity,$quantity,'-1','',$headline,$buttons,$authorityDelete,$authorityMail);
+            if( $authorityMail === TRUE )
+            {
+                // mit Funktion in andere Warteliste verschieben
+                $textBefore = "<p><input class='button_long' type='submit' name='preMoveList' value='Ausgewählte in andere&#xA;Warteliste verschieben'/>
+                                  <input name='listId' type='hidden' value='".$listID."'/>";
+                $textBefore .= "<input class='button_long' type='submit' name='writeMail' value='Ausgewählten eine&#xA;Email schreiben'/>
+                                  <input name='listId' type='hidden' value='".$listID."'/></p>";
+                wtl_make_site_view($dbId,'MOVELIST',$result,$listID,$quantity,$quantity,-1,'',$headline,$textBefore,'',$buttons);
+            }
+            else
+            {
+                wtl_make_site_view($dbId,'REGISTER',$result,$listID,$quantity,$quantity,-1,'',$headline,$textBefore,'',$buttons);
+            }
         }
     }
 
-    if( (empty($listID)) && (empty($delID)) && (!isset($_POST['sendDelete'])) )
+    if( empty($listID) && empty($delID) && !isset($_POST['sendDelete']) )
     {
         if( isset($_POST['sendSelected']) && ($authority !== TRUE) )
         {

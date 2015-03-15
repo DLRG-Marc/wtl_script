@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.6.0
+ * @date - time  03.05.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -146,7 +146,7 @@ function login($dbId,$sqlTable,$listID,$headerText)
             </form>
         </div>";
         echo "<p></p>
-            <p>Wenn Du Dein <a href='".str_replace('intern_','',$_SERVER['SCRIPT_NAME'])."?doc=swm_forg_pw&amp;listID=".$listID."'>Passwort</a> vergessen hast, dann kannst Du ein neues beantragen.</p>";
+            <p>Wenn Du Dein <a href='".str_replace('intern_','',$_SERVER['SCRIPT_NAME'])."?doc=wtl_forg_pw&amp;listID=".$listID."'>Passwort</a> vergessen hast, dann kannst Du ein neues beantragen.</p>";
     }
 }
 
@@ -179,6 +179,7 @@ function checkAutologout($dbId,$sqlTable,$userId)
 // NO RETURN
 function forgottenPw($dbId,$sqlTable,$listID,$headerText)
 {
+    $img_path = $GLOBALS['SYSTEM_SETTINGS']['GRAPHIC_PATH'];
     $fieldClass = array('username'=>'Field');
     // Eingabefelder auf Gültigkeit prüfen
     if( isset($_POST['resetPW']) )
@@ -262,8 +263,8 @@ function forgottenPw($dbId,$sqlTable,$listID,$headerText)
                     title='".$errorTitle['username']."' value='".$_POST['username']."'/></td>
             </tr>
             <tr>
-                <td></td>
-                <td><input class='button_long' type='submit' name='resetPW' value='neues Passwort anfordern'/></td>
+              <td></td>
+              <td><button class='key_img' type='submit' name='resetPW'><img src='".$img_path."key.png' alt='key'/> anfordern</button></td>
             </tr>
         </table>
         </div>
@@ -277,6 +278,7 @@ function forgottenPw($dbId,$sqlTable,$listID,$headerText)
 // NO RETURN
 function changePw($dbId,$sqlTable,$userId,$headerText)
 {
+    $img_path = $GLOBALS['SYSTEM_SETTINGS']['GRAPHIC_PATH'];
     // Eingabefelder auf Gültigkeit prüfen
     if( isset($_POST['sendChange']) )
     {
@@ -330,8 +332,8 @@ function changePw($dbId,$sqlTable,$userId,$headerText)
                         title='Das Passwort muß zwischen 6 und 12 Zeichen lang sein!' maxlength='12'/></td>
                 </tr>
                 <tr>
-                    <td></td>
-                    <td><input class='button' type='submit' name='sendChange' value='Ändern'/></td>
+                  <td></td>
+                  <td><button class='submit_img' type='submit' name='sendChange'><img src='".$img_path."accept.png' alt='accept'/> ändern</button></td>
                 </tr>
             </table>
             </div>

@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.6.0
+ * @date - time  23.04.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -115,7 +115,8 @@
                 $result = mysql_query("SELECT * FROM wtl_members WHERE deleted != '1' AND entryId = '".$entryId."' ORDER BY entryTstamp", $dbId);
                 $quantity_details = mysql_num_rows($result);
                 $headline = "<p><b>Details für die Aufnahmen Nr. ".$_GET['detno']."</b></p>";
-                wtl_make_site_view($dbId,'STATISTIC_DETAILS',$result,$listID,$quantity_details,'1','+1','',$headline,'',FALSE,FALSE);
+                $buttons = array();
+                wtl_make_site_view($dbId,'STATISTIC_DETAILS',$result,$listID,$quantity_details,'1','+1','',$headline,'','',$buttons);
                 echo "<p></p><p></p>";
             }
             // Alle Aufgenommenen der ausgewählten Warteliste zählen
@@ -137,7 +138,10 @@
                     " Personen aus der Warteliste ".$listName." erfolgt.</b></p>";
             }
             // Seitenaufbau aufrufen
-            wtl_make_site_view($dbId,'STATISTIC',$result,$listID,$quantity_data,$quantity_data,'-1','',$headline,'',FALSE,FALSE);
+            $buttons[] = array('headline'=>'', 'class'=>'button', 'name'=>'export', 'value'=>'exportieren',
+                                'action'=>array('value'=>str_replace('wtl_stat','wtl_upload',$_SERVER['REQUEST_URI'])."&amp;listID=".$listID."&amp;entryID=",
+                                'mysqlcol'=>'entryId'));
+            wtl_make_site_view($dbId,'STATISTIC',$result,$listID,$quantity_data,$quantity_data,'-1','',$headline,'','',$buttons);
             // grafische Statistik
             // Einschränkung des Datums
             if( ($quantity_data != 0) && $result )

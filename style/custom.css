@@ -1,23 +1,28 @@
-/* 	DLRG Deutsche Lebens-Rettungs-Gesellschaft e.V.
-	Benutzer-Layout für WWW-Server: www.dlrg.de
-	Gliederung: [Name], [Adresse]
-	Kontakt: [Name], [Mail]
-	custom.css - Version 1.2 - 01.02.2013
-	
-	CSS-Vorlage zum definieren eigener Styles als Ergaenzung 
-	zum Standard-Layout (style.css)  
-	Validieren mit http://jigsaw.w3.org/css-validator/  */
+/**
+ * Automatic Waitinglist WTL
+ * Copyright (C) 2012-2020 Marc Busse
+ *
+ * This script is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License 
+ * as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This script is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details
+ * at <http://www.gnu.org/licenses/>. 
+ *
+ * @WTL version  1.6.0
+ * @date - time  03.05.2014 - 19:00
+ * @copyright    Marc Busse 2012-2020
+ * @author       Marc Busse <http://www.eutin.dlrg.de>
+ * @license      GPL
+ */
 
-	
+
 /* ---------- hide menu item---------- */
-#itemtell {
-	display:none;}
-	
-/* ---------- eigene formate ---------- */
-.myclass {
-	 }
-#myid {
-	 }
+#itemtell {display:none;}
 
 /* Style sheet waitinglist */
 @charset "utf-8";
@@ -38,5 +43,4 @@
 .error_img{width:33px;height:29px;background-repeat:no-repeat;}
 .ok_img{width:32px;height:32px;margin-left:auto;background-repeat:no-repeat;}
 .waitinglist .wtl_moveable_table form .block{overflow:auto;}
-#userlogout{margin:0 0.33em 0 0;text-align:right;}
-#userlogout .button{border:1px solid #7F9DB9;}
+#userlogout{margin:0 6em 0 0;text-align:right;}

@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.2
- * @date - time  19.02.2014 - 19:00
+ * @WTL version  1.6.0
+ * @date - time  03.05.2014 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -87,7 +87,7 @@
             // Seitenüberschrift
             echo "<h1>Einstellungen Wartelisten</h1>";
             // aufruf der Set-Funktion
-            makeSets($dbId,'wtl_lists','',FALSE);
+            makeSets($dbId,'wtl_lists','',FALSE,'');
         }
         if( !$pageNo )
         {
@@ -323,7 +323,7 @@
         if( !$errorPage )
         {
             // Daten neu einlesen
-            $SQL_Befehl_Read = "SELECT * FROM wtl_lists WHERE id = '$setID'";
+            $SQL_Befehl_Read = "SELECT * FROM wtl_lists WHERE id = '".$setID."'";
             $result = mysql_query($SQL_Befehl_Read, $dbId);
             while( $daten = mysql_fetch_object($result) )
             {
@@ -384,7 +384,7 @@
         {
             // HTML Seite bauen
             // Überschrift
-            echo "<h1>Einstellungen Warteliste ".$_POST['setName']."</h1>";
+            echo "<h1>Einstellungen Warteliste '".$_POST['setName']."'</h1>";
             // Meldung bei erfolgreicher Änderung
             if( $pageNo == 4 )
             {
@@ -393,12 +393,16 @@
             }
             else
             {
+                echo "<p><a class='summary_img' title='zurück zur Setübersicht' href='".$script_url."'>
+                  <img width='16' height='16' alt='summary' src='".$img_path."summary.png'></a></p>
+                ";
                 // Einstellungen Wartelistenformular
                 if( $pageNo == 1 )
                 {
                     // Überschrift
                     echo "
-                        <p style='float:right;'><a href='".$script_url."&amp;setID=".$setID."&amp;pageNo=2'>nächste Seite</a></p>
+                        <p style='float:right;'><a class='right_img' title='nächste Seite' href='".$script_url."&amp;setID=".$setID."&amp;pageNo=2'>
+                          <img width='16' height='16' alt='right', src='".$img_path."right.png'></a></p>
                         <p style='clear:both;'>Hier werden die Einstellungen für das Wartelistenformular vorgenommen.</p>
                     ";
                     // Formularfelder bauen und ausfüllen
@@ -499,9 +503,10 @@
                         </tr>
                         <tr>
                             <td><input name='setName' type='hidden' value='".$_POST['setName']."'/></td>
-                            <td><input class='button' type='submit' name='sendInputRegister' value='Übernehmen'/></td>
-                            <td><input class='button' type='reset' name='cancel' value='Abbrechen' 
-                                onclick=\"location.href='".$script_url."'\"/></td>
+                            <td><button class='submit_img' type='submit' name='sendInputRegister'>
+                              <img src='".$img_path."accept.png' alt='accept'/> speichern</button></td>
+                            <td><button class='cancel_img' type='reset' name='cancel' onclick=\"location.href='".$script_url."'\">
+                              <img src='".$img_path."cancel.png' alt='cancel'/> abbrechen</button></td>
                         </tr>
                     </table>
                     </div>
@@ -514,8 +519,10 @@
                 {
                     // Überschrift
                     echo "
-                        <p style='float:left;'><a href='".$script_url."&amp;setID=".$setID."&amp;pageNo=1'>vorherige Seite</a></p>
-                        <p style='float:right;'><a href='".$script_url."&amp;setID=".$setID."&amp;pageNo=3'>nächste Seite</a></p>
+                        <p style='float:left;'><a class='left_img' title='vorherige Seite' href='".$script_url."&amp;setID=".$setID."&amp;pageNo=1'>
+                          <img width='16' height='16' alt='left', src='".$img_path."left.png'></a></p>
+                        <p style='float:right;'><a class='right_img' title='nächste Seite' href='".$script_url."&amp;setID=".$setID."&amp;pageNo=3'>
+                          <img width='16' height='16' alt='right', src='".$img_path."right.png'></a></p>
                         <p style='clear:both;'>Hier werden die Einstellungen für das Aufnahmeformular vorgenommen.</p>
                     ";
                     // Formularfelder bauen und ausfüllen
@@ -576,10 +583,11 @@
                         echo "
                         <tr>
                             <td><input name='serSelectfields' type='hidden' value='".$_POST['selectfields']."'/>
-                                <input name='setName' type='hidden' value='".$_POST['setName']."'/></td>
-                            <td><input class='button' type='submit' name='sendInputEntry' value='Übernehmen'/></td>
-                            <td><input class='button' type='reset' name='cancel' value='Abbrechen' 
-                                onclick=\"location.href='".$script_url."'\"/></td>
+                              <input name='setName' type='hidden' value='".$_POST['setName']."'/></td>
+                            <td><button class='submit_img' type='submit' name='sendInputEntry'>
+                              <img src='".$img_path."accept.png' alt='accept'/> speichern</button></td>
+                            <td><button class='cancel_img' type='reset' name='cancel' onclick=\"location.href='".$script_url."'\">
+                              <img src='".$img_path."cancel.png' alt='cancel'/> abbrechen</button></td>
                         </tr>
                     </table>
                     </div>
@@ -592,7 +600,8 @@
                 {
                     // Überschrift
                     echo "
-                        <p style='float:left;'><a href='".$script_url."&amp;setID=".$setID."&amp;pageNo=2'>vorherige Seite</a></p>
+                        <p style='float:left;'><a class='left_img' title='vorherige Seite' href='".$script_url."&amp;setID=".$setID."&amp;pageNo=2'>
+                          <img width='16' height='16' alt='left', src='".$img_path."left.png'></a></p>
                         <p style='clear:both;'>Hier werden die Einstellungen für die Ansichten vorgenommen.</p>
                     ";
                     // Formularfelder bauen und ausfüllen
@@ -657,9 +666,10 @@
                         echo "
                         <tr>
                             <td><input name='setName' type='hidden' value='".$_POST['setName']."'/></td>
-                            <td><input class='button' type='submit' name='sendInputView' value='Übernehmen'/></td>
-                            <td><input class='button' type='reset' name='cancel' value='Abbrechen' 
-                                onclick=\"location.href='".$script_url."'\"/></td>
+                            <td><button class='submit_img' type='submit' name='sendInputView'>
+                              <img src='".$img_path."accept.png' alt='accept'/> speichern</button></td>
+                            <td><button class='cancel_img' type='reset' name='cancel' onclick=\"location.href='".$script_url."'\">
+                              <img src='".$img_path."cancel.png' alt='cancel'/> abbrechen</button></td>
                         </tr>
                     </table>
                     </div>
@@ -667,12 +677,6 @@
                     ";
                 }
 
-                echo "
-                <form name='wtl_settings_form' method='post' action='".htmlspecialchars($_SERVER['REQUEST_URI'])."'>
-                    <p><input class='button' type='button' name='viewFieldSets' value='Setübersicht'
-                    onclick=\"location.href='".$script_url."'\"/></p>
-                </form>
-                ";
             }
         }
         // wenn Daten geändert wurden, Menüeinträge ändern

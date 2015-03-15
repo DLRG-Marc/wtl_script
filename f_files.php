@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.6.0
+ * @date - time  15.03.2015 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -35,23 +35,41 @@ function convertFileToUTF8($file)
 
 //@$file string
 //@return boolean
-function makeSQLtableFormSQLdata($dbId,$file)
+function makeSQLtableFormSQLdata($dbId,$file,$version)
 {
-    $result = FALSE;
+    $retresult = FALSE;
     $sqlStr = file_get_contents($file);
     $sqlStr = preg_replace('%/\*(.*)\*/%Us','',$sqlStr);
     $sqlStr = preg_replace('%^--(.*)\n%mU','',$sqlStr);
     $sqlStr = preg_replace('%^$\n%mU','',$sqlStr);
     $sqlStr = str_replace(chr(13),'',$sqlStr);
-    $sql = explode(';'.chr(10),$sqlStr);
-    foreach($sql as $sqlrow)
+    if( $version === FALSE )
     {
-        if( mysql_query($sqlrow,$dbId) )
+        $sql = explode(';'.chr(10),$sqlStr);
+        foreach($sql as $sqlrow)
         {
-            $result = TRUE;
+            if( mysql_query($sqlrow,$dbId) )
+            {
+                $retresult = TRUE;
+            }
         }
     }
-    return $result;
+    else
+    {
+        $vnum = str_replace('.','',$version);
+        $start = strpos($sqlStr,'UPDATE_V'.$vnum);
+        $end = strpos($sqlStr,'UPDATE_END',$start);
+        $sqlStr = substr($sqlStr,$start+strlen('UPDATE_V'.$vnum)+1,$end-($start+strlen('UPDATE_V'.$vnum)+1));
+        $sql = explode(';'.chr(10),$sqlStr);
+        foreach($sql as $sqlrow)
+        {
+            if( mysql_query($sqlrow,$dbId) )
+            {
+                $retresult = TRUE;
+            }
+        }
+    }
+    return $retresult;
 }
 
 //@$dbId int

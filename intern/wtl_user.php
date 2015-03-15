@@ -262,6 +262,9 @@
             }
             else
             {
+                echo "<p><a class='summary_img' title='zurück zur Setübersicht' href='".$script_url."'>
+                  <img width='16' height='16' alt='summary' src='".$img_path."summary.png'></a></p>
+                ";
                 // Formularfelder bauen und ausfüllen
                 echo "
                 <form name='userFields_form' method='post' action='".htmlspecialchars($_SERVER['REQUEST_URI'])."'>
@@ -346,18 +349,20 @@
                         </select></td>
                     </tr>
                     <tr>
-                        <td></td>
-                        <td><input class='button' type='submit' name='assumeUser' value='Übernehmen'/></td>
-                        <td><input class='button' type='reset' name='cancel' value='Abbrechen' 
-                            onclick=\"location.href='".$script_url."'\"/></td>
+                      <td></td>
+                      <td><button class='submit_img' type='submit' name='assumeUser'>
+                        <img src='".$img_path."accept.png' alt='accept'/> speichern</button></td>
+                      <td><button class='cancel_img' type='reset' name='cancel' onclick=\"location.href='".$script_url."'\">
+                        <img src='".$img_path."cancel.png' alt='cancel'/> abbrechen</button></td>
                     </tr>
                     <tr>
                         <td><input name='setName' type='hidden' value='".$_POST['setName']."'/></td>
                         <td colspan='2'>";
                         if( $pwisset )
                         {
-                            echo "<input class='button_long' type='button' name='newPW' value='neues Passwort versenden' 
-                                onclick=\"location.href='".$script_url."&amp;setID=".$setID."&amp;sendPW=new'\"/>";
+                          echo "<a class='sendpw_img' title='neues Passwort versenden' href='".$script_url."&amp;setID=".$setID."&amp;sendPW=new'>
+                            <img width='16' height='16' alt='sendpw', src='".$img_path."sendpw.png'></a></p>
+                          ";
                         }
                         else
                         {
@@ -367,8 +372,6 @@
                     </tr>
                 </table>
                 </div>
-                <p><input class='button' type='button' name='viewUserSets' value='Setübersicht'
-                    onclick=\"location.href='".$script_url."'\"/></p>
                 </form>
                 ";
             }
