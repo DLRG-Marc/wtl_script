@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -26,8 +26,8 @@
     // Settings
     require_once('f_sets.php');
     require_once('f_files.php');
-    $listID = mysql_real_escape_string($_GET['listID']);
-    $_POST['entryId'] = mysql_real_escape_string($_GET['entryID']);
+    $listID = mysqli_real_escape_string($dbId,$_GET['listID']);
+    $_POST['entryId'] = mysqli_real_escape_string($dbId,$_GET['entryID']);
     $authority = FALSE;
     $fileOK = FALSE;
     $upload_OK = FALSE;
@@ -36,7 +36,7 @@
     foreach( $_POST as $index => $val )
     {
         $_POST[$index] = trim(htmlspecialchars( $val, ENT_NOQUOTES, UTF-8 ));
-        $MYSQL[$index] = mysql_real_escape_string($_POST[$index]);
+        $MYSQL[$index] = mysqli_real_escape_string($dbId,$_POST[$index]);
     }
     if( empty($listID) )
     {
@@ -47,8 +47,8 @@
     $authority = checkAuthority($dbId,'wtl_user','uploadAuth',$listID);
 
     // Daten der wtl_lists lesen
-    $result = mysql_query("SELECT setName FROM wtl_lists WHERE id = '".$listID."'",$dbId);
-    $setNameArray = mysql_fetch_row($result);
+    $result = mysqli_query($dbId,"SELECT setName FROM wtl_lists WHERE id = '".$listID."'");
+    $setNameArray = mysqli_fetch_row($result);
 
     echo "<div id='wtl_upload'>
           <div class='waitinglist'>";

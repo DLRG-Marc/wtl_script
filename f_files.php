@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.6.0
- * @date - time  15.03.2015 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -48,7 +48,7 @@ function makeSQLtableFormSQLdata($dbId,$file,$version)
         $sql = explode(';'.chr(10),$sqlStr);
         foreach($sql as $sqlrow)
         {
-            if( mysql_query($sqlrow,$dbId) )
+            if( mysqli_query($dbId,$sqlrow) )
             {
                 $retresult = TRUE;
             }
@@ -63,7 +63,7 @@ function makeSQLtableFormSQLdata($dbId,$file,$version)
         $sql = explode(';'.chr(10),$sqlStr);
         foreach($sql as $sqlrow)
         {
-            if( mysql_query($sqlrow,$dbId) )
+            if( mysqli_query($dbId,$sqlrow) )
             {
                 $retresult = TRUE;
             }
@@ -94,8 +94,8 @@ function downloadTableDataToCSVfile($dbId,$tablePrefix,$tableDownloadFrom,$listI
         $fieldNames = ',"'.$fieldNames.'"';
     }
     $dataDownloadCSVmembers .= $fieldNames."\n";
-    $result = mysql_query("SELECT * FROM ".$tableDownloadFrom." WHERE listId = '".$listId."'".$extraConditions,$dbId);
-    while( $daten = mysql_fetch_object($result) )
+    $result = mysqli_query($dbId,"SELECT * FROM ".$tableDownloadFrom." WHERE listId = '".$listId."'".$extraConditions);
+    while( $daten = mysqli_fetch_object($result) )
     {
         $viewFields = array_merge(explode('##',$daten->inputs),explode('##',$daten->selected));
         $fieldData = implode('","',dataFromSelFields($dbId,$tablePrefix,$returnValues[0],$viewFields,$retArray));
@@ -218,8 +218,8 @@ function insertCSVdataIntoTable($dbId,$tablePrefix,$tableDataTo,$fixFieldNameArr
     $fields = fgetcsv($file);
     foreach( $fields as $key => $val )
     {
-        $result = mysql_query("SELECT setNo, fieldType FROM ".$tablePrefix."_fields WHERE isSet = '1' AND caption ='".$val."'",$dbId);
-        $resultArray = mysql_fetch_row($result);
+        $result = mysqli_query($dbId,"SELECT setNo, fieldType FROM ".$tablePrefix."_fields WHERE isSet = '1' AND caption ='".$val."'");
+        $resultArray = mysqli_fetch_row($result);
         $fieldName = array();
         if( !empty($resultArray[0]) )
         {
@@ -248,8 +248,8 @@ function insertCSVdataIntoTable($dbId,$tablePrefix,$tableDataTo,$fixFieldNameArr
                 }
                 if( $fieldtype[$key] == 'dropdown' )
                 {
-                    $result = mysql_query("SELECT data FROM ".$tablePrefix."_fields WHERE isSet = '0' AND setNo = '".$fieldname[$key]."' AND dataLabel ='".$val."'",$dbId);
-                    $resultArray = mysql_fetch_row($result);
+                    $result = mysqli_query($dbId,"SELECT data FROM ".$tablePrefix."_fields WHERE isSet = '0' AND setNo = '".$fieldname[$key]."' AND dataLabel ='".$val."'");
+                    $resultArray = mysqli_fetch_row($result);
                     $selectdata .= "#".$fieldname[$key].";".$resultArray[0]."#";
                 }
             }
@@ -265,7 +265,7 @@ function insertCSVdataIntoTable($dbId,$tablePrefix,$tableDataTo,$fixFieldNameArr
         $fielddata .= "inputs = '".$inputdata."', ";
         $fielddata .= "selected = '".$selectdata."', ";
         $SQL_Befehl_Write = "INSERT INTO ".$tableDataTo." SET ".$fielddata." listId = '".$listId."'".$tableExtraFields;
-        if( (mysql_query($SQL_Befehl_Write,$dbId)!==FALSE) )
+        if( (mysqli_query($dbId,$SQL_Befehl_Write)!==FALSE) )
         {
             $uploded = TRUE;
         }
@@ -287,25 +287,25 @@ function mysqlTableUpdateByCsvFile($dbId,$fileOnServer,$sqlTable,$sqlCondition,$
     }
     if( $delBevore === TRUE )
     {
-        if( mysql_query("DELETE FROM ".$sqlTable.$sqlCondition,$dbId) )
+        if( mysqli_query($dbId,"DELETE FROM ".$sqlTable.$sqlCondition) )
         {
             $result_OK = TRUE;
         }
     }
     $SQL_sql = "LOAD DATA LOCAL INFILE '".$fileOnServer."' REPLACE INTO TABLE ".$sqlTable." FIELDS TERMINATED BY '".
         $sqlSeperator."' ENCLOSED BY '".$sqlEncloser."' LINES TERMINATED BY '".$sqlLineTerminator."' IGNORE ".$sqlIgnoreLines." LINES ".$sqlFieldList;
-    if( mysql_query($SQL_del,$dbId) )
+    if( mysqli_query($dbId,$SQL_del) )
     {
         $result_OK = TRUE;
     }
     if( $result_OK === TRUE )
     {
         $message = "<p><b>Aktualisierung der Tabelle in der Datenbank erfolgreich !</b></p>";
-        //$message .= "<p>".mysql_info()."</p>";
+        //$message .= "<p>".mysqli_info()."</p>";
     }
     else
     {
-        $message = "<p><b>Aktualisierung der Tabelle in der Datenbank fehlgeschlagen !<br/>Grund: ".mysql_error()."</b></p>";
+        $message = "<p><b>Aktualisierung der Tabelle in der Datenbank fehlgeschlagen !<br/>Grund: ".mysqli_error()."</b></p>";
     }
     return $message;
 }

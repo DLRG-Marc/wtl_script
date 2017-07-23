@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.1
- * @date - time  13.02.2014 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -25,7 +25,7 @@
 
     // Settings
     require_once('f_sets.php');
-    $setID = mysql_real_escape_string($_GET['setID']);
+    $setID = mysqli_real_escape_string($dbId,$_GET['setID']);
     $sendPW = $_GET['sendPW'];
     if( strpos($_SERVER['REQUEST_URI'],'&') === FALSE )
     {
@@ -54,7 +54,7 @@
     foreach( $_POST as $index => $val )
     {
         $_POST[$index] = trim(htmlspecialchars( $val, ENT_NOQUOTES, UTF-8 ));
-        $MYSQL[$index] = mysql_real_escape_string($_POST[$index]);
+        $MYSQL[$index] = mysqli_real_escape_string($dbId,$_POST[$index]);
     }
 
     echo "<div id='wtl_user'>
@@ -98,8 +98,8 @@
             }
             if( $_POST['sAdmin'] != '1' )
             {
-                $result = mysql_query("SELECT count(id) FROM swm_user WHERE sAdmin = '1'", $dbId);
-                $adminArray = mysql_fetch_row($result);
+                $result = mysqli_query($dbId,"SELECT count(id) FROM swm_user WHERE sAdmin = '1'");
+                $adminArray = mysqli_fetch_row($result);
                 if( $adminArray[0] < '1' )
                 {
                     $input_OK = FALSE;
@@ -181,14 +181,14 @@
                     disable = '".$MYSQL['disable']."', viewAuth = '".$MYSQL['view']."', registerAuth = '".$MYSQL['register']."',
                     entryAuth = '".$MYSQL['entry']."', deleteAuth = '".$MYSQL['delete']."', uploadAuth = '".$MYSQL['upload']."',
                     lastEditor = '".$username."' WHERE id = '".$setID."'";
-                $result = mysql_query($SQL_Befehl_Write,$dbId);
-                if( (mysql_affected_rows($dbId) == 1) && ($result === TRUE) )
+                $result = mysqli_query($dbId,$SQL_Befehl_Write);
+                if( (mysqli_affected_rows($dbId) == 1) && ($result === TRUE) )
                 {
                     $message = "<p><b>Die Einstellungen des Administrators '".$_POST['setName']."' wurden geändert !</b></p>
                         <p><a href='".$script_url."'>zurück zu den Einstellungen.</a></p>";
                     // ggf. Firstinstall zurücksetzen
-                    $result = mysql_query("SELECT count(id) FROM wtl_user WHERE userpw = '' AND id = '".$setID."'", $dbId);
-                    $adminArray = mysql_fetch_row($result);
+                    $result = mysqli_query($dbId,"SELECT count(id) FROM wtl_user WHERE userpw = '' AND id = '".$setID."'");
+                    $adminArray = mysqli_fetch_row($result);
                     if( $adminArray[0] == '1' )
                     {
                         $sendPW = 'new';
@@ -207,10 +207,10 @@
         if( $sendPW == 'new' )
         {
             $startPW = buildPassword(8);
-            $result = mysql_query("SELECT username, userpw, realname, mail FROM wtl_user WHERE id = '".$setID."'",$dbId);
-            $daten = mysql_fetch_object($result);
-            $result_write = mysql_query("UPDATE wtl_user SET userpw = '".md5($startPW)."' WHERE id = '".$setID."'",$dbId);
-            if( ($result_write != 0) && (mysql_affected_rows($dbId) == 1) )
+            $result = mysqli_query($dbId,"SELECT username, userpw, realname, mail FROM wtl_user WHERE id = '".$setID."'");
+            $daten = mysqli_fetch_object($result);
+            $result_write = mysqli_query($dbId,"UPDATE wtl_user SET userpw = '".md5($startPW)."' WHERE id = '".$setID."'");
+            if( ($result_write != 0) && (mysqli_affected_rows($dbId) == 1) )
             {
                 // email vorbereiten und versenden
                 $mailtext  = "Hallo ".$daten->realname.",\n\n";
@@ -227,8 +227,8 @@
         if( !$errorPage )
         {
             // Daten neu einlesen
-            $result = mysql_query("SELECT * FROM wtl_user WHERE id = '".$setID."'",$dbId);
-            while( $daten = mysql_fetch_object($result) )
+            $result = mysqli_query($dbId,"SELECT * FROM wtl_user WHERE id = '".$setID."'");
+            while( $daten = mysqli_fetch_object($result) )
             {
                 $_POST['setName'] = $daten->setName;
                 $_POST['username'] = $daten->username;

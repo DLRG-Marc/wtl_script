@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.1
- * @date - time  13.02.2014 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -36,10 +36,10 @@ function errorNote()
 function connectDatebase()
 {
     // Verbindung zur Datenbank herstellen
-    $dbId = mysql_connect($GLOBALS['DB_SETTINGS']['HOST'].":".$GLOBALS['DB_SETTINGS']['PORT'],$GLOBALS['DB_SETTINGS']['USER'],
-        $GLOBALS['DB_SETTINGS']['PASSWORD']) OR die ("Keine Verbindung zum Server möglich: " .mysql_error());
-    @mysql_select_db($GLOBALS['DB_SETTINGS']['DATABASE'],$dbId);
-    @mysql_query("SET NAMES 'utf8'");
+    $dbId = mysqli_connect($GLOBALS['DB_SETTINGS']['HOST'].":".$GLOBALS['DB_SETTINGS']['PORT'],$GLOBALS['DB_SETTINGS']['USER'],
+        $GLOBALS['DB_SETTINGS']['PASSWORD']) OR die ("Keine Verbindung zum Server möglich: " .mysqli_error());
+    @mysqli_select_db($dbId,$GLOBALS['DB_SETTINGS']['DATABASE']);
+    @mysqli_query($dbId,"SET NAMES 'utf8'");
     return $dbId;
 }
 
@@ -146,6 +146,7 @@ function makeTable($rows,$textBeforeTable,$textAfterTable)
 //@return result
 function searchText($sqlTable,$headline,$hiddenFields,$sqlCond,$searchField_1,$searchField_2,$searchTextHead_1,$searchTextHead_2)
 {
+        global $dbId;
         // Suchformular erstellen
         echo "<p><b>".$headline." :</b></p>";
         echo "
@@ -173,7 +174,7 @@ function searchText($sqlTable,$headline,$hiddenFields,$sqlCond,$searchField_1,$s
     foreach( $_POST as $index => $val )
     {
         $_POST[$index] = trim(htmlspecialchars( $val, ENT_NOQUOTES, UTF-8 ));
-        $MYSQL[$index] = mysql_real_escape_string($_POST[$index]);
+        $MYSQL[$index] = mysqli_real_escape_string($dbId,$_POST[$index]);
     }
     // wenn suchen ausgelöst
     if( isset($_POST['search']) )
@@ -184,17 +185,17 @@ function searchText($sqlTable,$headline,$hiddenFields,$sqlCond,$searchField_1,$s
         }
         if( $_POST['searchText_1'] && $_POST['searchText_2'] )
         {
-            $result = mysql_query("SELECT * FROM ".$sqlTable." WHERE ".$cond." (".$searchField_1." LIKE '".$MYSQL['searchText_1']."%' OR ".
+            $result = mysqli_query($dbId,"SELECT * FROM ".$sqlTable." WHERE ".$cond." (".$searchField_1." LIKE '".$MYSQL['searchText_1']."%' OR ".
                 $searchField_2." LIKE '".$MYSQL['searchText_2']."%') ORDER BY id ASC");
         }
         elseif( $_POST['searchText_1'] )
         {
-            $result = mysql_query("SELECT * FROM ".$sqlTable." WHERE ".$cond." (".$searchField_1." LIKE '".$MYSQL['searchText_1']."%')
+            $result = mysqli_query($dbId,"SELECT * FROM ".$sqlTable." WHERE ".$cond." (".$searchField_1." LIKE '".$MYSQL['searchText_1']."%')
                 ORDER BY ".$searchField_1." ASC, ".$searchField_2." ASC");
         }
         elseif( $_POST['searchText_2'] )
         {
-            $result = mysql_query("SELECT * FROM ".$sqlTable." WHERE ".$cond." (".$searchField_2." LIKE '".$MYSQL['searchText_2']."%')
+            $result = mysqli_query($dbId,"SELECT * FROM ".$sqlTable." WHERE ".$cond." (".$searchField_2." LIKE '".$MYSQL['searchText_2']."%')
                 ORDER BY ".$searchField_2." ASC, ".$searchField_1." ASC");
         }
         else
@@ -203,7 +204,7 @@ function searchText($sqlTable,$headline,$hiddenFields,$sqlCond,$searchField_1,$s
             {
                 $cond = " WHERE ".$sqlCond;
             }
-            $result = mysql_query("SELECT * FROM ".$sqlTable.$cond." ORDER BY ".$searchField_1." ASC, ".$searchField_2." ASC");
+            $result = mysqli_query($dbId,"SELECT * FROM ".$sqlTable.$cond." ORDER BY ".$searchField_1." ASC, ".$searchField_2." ASC");
         }
     }
     return $result;

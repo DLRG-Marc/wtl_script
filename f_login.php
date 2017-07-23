@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.6.0
- * @date - time  03.05.2014 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -31,10 +31,10 @@
 function checkAuthority($dbId,$sqlTable,$right,$listId)
 {
     $authority = FALSE;
-    $result = mysql_query("SELECT * FROM ".$sqlTable." WHERE id = '".$_SESSION['intern']['userId']."' LIMIT 1",$dbId);
+    $result = mysqli_query($dbId,"SELECT * FROM ".$sqlTable." WHERE id = '".$_SESSION['intern']['userId']."' LIMIT 1");
     if( $result !== FALSE )
     {
-        $daten = mysql_fetch_object($result);
+        $daten = mysqli_fetch_object($result);
         if( ($right == 'admin') || ($right == 'sAdmin') )
         {
             if( ($right == 'admin' && ($daten->admin == '1' || $daten->sAdmin == '1')) || ($right == 'sAdmin' && $daten->sAdmin == '1') )
@@ -77,16 +77,16 @@ function login($dbId,$sqlTable,$listID,$headerText)
             if( $listID == 0 )
             {
                 $SQL_Befehl_Read = "SELECT id, userpw, realname FROM ".$sqlTable." WHERE isSet = '1' AND disable != '1' AND
-                    username = '".mysql_real_escape_string($_POST['username'])."' LIMIT 1";
+                    username = '".mysqli_real_escape_string($dbId,$_POST['username'])."' LIMIT 1";
                 $intExt = 'intern';
             }
             else
             {
                 // Benutzerset anhand der id suchen
-                $result = mysql_query("SELECT setNo FROM ".$sqlTable." WHERE isSet = '1'  AND id = '".$listID."'",$dbId);
-                $resultArray = mysql_fetch_row($result);
+                $result = mysqli_query($dbId,"SELECT setNo FROM ".$sqlTable." WHERE isSet = '1'  AND id = '".$listID."'");
+                $resultArray = mysqli_fetch_row($result);
                 $SQL_Befehl_Read = "SELECT id, userpw, realname FROM ".$sqlTable." WHERE setNo = '".$resultArray[0]."' AND isSet !='1' AND disable != '1'
-                    AND username = '".mysql_real_escape_string($_POST['username'])."' LIMIT 1";
+                    AND username = '".mysqli_real_escape_string($dbId,$_POST['username'])."' LIMIT 1";
                 $intExt = 'extern';
             }
             if( ($listID == 0) && ($GLOBALS['INSTALL']['FIRSTINSTALL'] === TRUE) )
@@ -99,11 +99,11 @@ function login($dbId,$sqlTable,$listID,$headerText)
             }
             else
             {
-                $result = mysql_query($SQL_Befehl_Read,$dbId);
-                $quantity = mysql_num_rows($result);
+                $result = mysqli_query($dbId,$SQL_Befehl_Read);
+                $quantity = mysqli_num_rows($result);
                 if( (($quantity == 1) && ($result !== FALSE)) )
                 {
-                    $daten = mysql_fetch_object($result);
+                    $daten = mysqli_fetch_object($result);
                     if( $daten->userpw == md5($_POST['userpw']) )
                     {
                         $_SESSION[$intExt]['loggedIn'] = TRUE;
@@ -158,8 +158,8 @@ function checkAutologout($dbId,$sqlTable,$userId)
 {
     if( $GLOBALS['INSTALL']['FIRSTINSTALL'] !== TRUE )
     {
-        $result = mysql_query("SELECT lastAction FROM ".$sqlTable." WHERE id = '".$userId."'",$dbId);
-        $lastActArray = mysql_fetch_row($result);
+        $result = mysqli_query($dbId,"SELECT lastAction FROM ".$sqlTable." WHERE id = '".$userId."'");
+        $lastActArray = mysqli_fetch_row($result);
         // check auf 10 min
         if( ($lastActArray[0] + ($GLOBALS['SYSTEM_SETTINGS']['AUTOLOGOUTTIME']*60)) < time() )
         {
@@ -167,7 +167,7 @@ function checkAutologout($dbId,$sqlTable,$userId)
         }
         else
         {
-            $result = mysql_query("UPDATE ".$sqlTable." SET lastAction ='".time()."' WHERE id = '".$userId."'",$dbId);
+            $result = mysqli_query($dbId,"UPDATE ".$sqlTable." SET lastAction ='".time()."' WHERE id = '".$userId."'");
         }
     }
 }
@@ -204,22 +204,22 @@ function forgottenPw($dbId,$sqlTable,$listID,$headerText)
                 $sqlCond_2 = " AND isSet != '1'";
             }
             // Benutzerset anhand der id suchen
-            $result = mysql_query("SELECT setNo FROM ".$sqlTable." WHERE isSet = '1'".$sqlCond_1);
-            $resultArray = mysql_fetch_row($result);
+            $result = mysqli_query($dbId,"SELECT setNo FROM ".$sqlTable." WHERE isSet = '1'".$sqlCond_1);
+            $resultArray = mysqli_fetch_row($result);
             $SQL_Befehl_Read = "SELECT mail FROM ".$sqlTable." WHERE setNo = '".$resultArray[0]."'
-                AND username = '".mysql_real_escape_string($_POST['username'])."'".$sqlCond_2;
-            $result = mysql_query($SQL_Befehl_Read,$dbId);
-            if( (mysql_num_rows($result) == 1) && ($result !== FALSE) )
+                AND username = '".mysqli_real_escape_string($dbId,$_POST['username'])."'".$sqlCond_2;
+            $result = mysqli_query($dbId,$SQL_Befehl_Read);
+            if( (mysqli_num_rows($result) == 1) && ($result !== FALSE) )
             {
-                while( $daten = mysql_fetch_object($result) )
+                while( $daten = mysqli_fetch_object($result) )
                 {
                     $mMail = $daten->mail;
                 }
                 $newPW = md5(buildPassword(8));
                 $SQL_Befehl_Write = "UPDATE ".$sqlTable." SET userpw = '".$newPW."' WHERE isSet != '1' AND setNo = '".$resultArray[0]."'
-                    AND username = '".mysql_real_escape_string($_POST['username'])."'";
-                $result = mysql_query($SQL_Befehl_Write,$dbId); 
-                if( (mysql_affected_rows($dbId) == 1) && ($result !== FALSE) )
+                    AND username = '".mysqli_real_escape_string($dbId,$_POST['username'])."'";
+                $result = mysqli_query($dbId,$SQL_Befehl_Write); 
+                if( (mysqli_affected_rows($dbId) == 1) && ($result !== FALSE) )
                 {
                     $mText = "Du hast ein neues Passwort für den Zugang zur Warteliste der ".$GLOBALS['HOME']['NAME']." angefordert.\n";
                     $mText .= "Das neue Passwort lautet : ".$newPW."\n";
@@ -297,9 +297,9 @@ function changePw($dbId,$sqlTable,$userId,$headerText)
     if( $input_OK )
     {
         $only_message = TRUE;
-        $SQL_Befehl_Write = "UPDATE ".$sqlTable." SET userpw ='".md5(mysql_real_escape_string($_POST['userpw_1']))."' WHERE id = '".$userId."'";
-        $result = mysql_query($SQL_Befehl_Write,$dbId);
-        if( (mysql_affected_rows($dbId) == 1) && ($result !== FALSE) )
+        $SQL_Befehl_Write = "UPDATE ".$sqlTable." SET userpw ='".md5(mysqli_real_escape_string($dbId,$_POST['userpw_1']))."' WHERE id = '".$userId."'";
+        $result = mysqli_query($dbId,$SQL_Befehl_Write);
+        if( (mysqli_affected_rows($dbId) == 1) && ($result !== FALSE) )
         {
             $message = "Dein Passwort wurde geändert!";
         }
@@ -354,10 +354,10 @@ function setUserdata($dbId,$sqlTable,$userId,$headerText)
     foreach( $_POST as $index => $val )
     {
         $_POST[$index] = trim(htmlspecialchars( $val, ENT_NOQUOTES, UTF-8 ));
-        $MYSQL[$index] = mysql_real_escape_string($_POST[$index]);
+        $MYSQL[$index] = mysqli_real_escape_string($dbId,$_POST[$index]);
     }
-    $result = mysql_query("SELECT username, userpw, realname, updated FROM ".$sqlTable." WHERE id = '".$userId."' LIMIT 1",$dbId);
-    $daten = mysql_fetch_object($result);
+    $result = mysqli_query($dbId,"SELECT username, userpw, realname, updated FROM ".$sqlTable." WHERE id = '".$userId."' LIMIT 1");
+    $daten = mysqli_fetch_object($result);
     if( $_POST['realname'] == '' )
     {
         $_POST['realname'] = $daten->realname;
@@ -396,8 +396,8 @@ function setUserdata($dbId,$sqlTable,$userId,$headerText)
             {
                 $SQL_Befehl_Write = "UPDATE ".$sqlTable." SET userpw = '".md5($MYSQL['userpw_1'])."', realname = '".$MYSQL['realname']."', updated = '1'
                     WHERE isSet != '1' AND id = '".$userId."'";
-                $result = mysql_query($SQL_Befehl_Write,$dbId); 
-                if( (mysql_affected_rows($dbId) == 1) && ($result !== FALSE) )
+                $result = mysqli_query($dbId,$SQL_Befehl_Write); 
+                if( (mysqli_affected_rows($dbId) == 1) && ($result !== FALSE) )
                 {
                     $ret = TRUE;
                 }

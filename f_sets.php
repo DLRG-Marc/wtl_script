@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.6.0
- * @date - time  15.03.2015 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -46,12 +46,12 @@ function makeSets($dbId,$sqlTable,$fieldType,$withCheckbox,$boxHeader)
     foreach( $_POST as $index => $val )
     {
         $_POST[$index] = trim(htmlspecialchars( $val, ENT_NOQUOTES, UTF-8 ));
-        $MYSQL[$index] = mysql_real_escape_string($_POST[$index]);
+        $MYSQL[$index] = mysqli_real_escape_string($dbId,$_POST[$index]);
     }
     foreach( $_GET as $index => $val )
     {
         $_GET[$index] = trim(htmlspecialchars( $val, ENT_NOQUOTES, UTF-8 ));
-        $MYSQL[$index] = mysql_real_escape_string($_GET[$index]);
+        $MYSQL[$index] = mysqli_real_escape_string($dbId,$_GET[$index]);
     }
     // Eingaben der Sets auf Gültigkeit prüfen
     if( isset($_POST['assumeSet']) )
@@ -84,8 +84,8 @@ function makeSets($dbId,$sqlTable,$fieldType,$withCheckbox,$boxHeader)
                 $sqlField .= ", fieldType = '".$fieldType."'";
             }
             // nächste Id ermitteln
-            $result = mysql_query("SHOW TABLE STATUS LIKE '".$sqlTable."'", $dbId);
-            $statusArray = mysql_fetch_assoc($result);
+            $result = mysqli_query($dbId,"SHOW TABLE STATUS LIKE '".$sqlTable."'");
+            $statusArray = mysqli_fetch_assoc($result);
             $next_id = $statusArray['Auto_increment'];
             // Set änden
             if( $_GET['action'] == 'edit' )
@@ -97,8 +97,8 @@ function makeSets($dbId,$sqlTable,$fieldType,$withCheckbox,$boxHeader)
             // Set kopieren
             if( $_GET['action'] == 'copy' )
             {
-                mysql_query("CREATE TABLE wtl_tmp SELECT * FROM ".$sqlTable." WHERE id = '".$MYSQL['id']."'", $dbId);
-                mysql_query("UPDATE wtl_tmp SET id = NULL, setNo = '".$next_id."', setName = '".$MYSQL['setName']."', published = ''", $dbId);
+                mysqli_query($dbId,"CREATE TABLE wtl_tmp SELECT * FROM ".$sqlTable." WHERE id = '".$MYSQL['id']."'");
+                mysqli_query($dbId,"UPDATE wtl_tmp SET id = NULL, setNo = '".$next_id."', setName = '".$MYSQL['setName']."', published = ''");
                 $SQL_Befehl_Write = "INSERT INTO ".$sqlTable." SELECT * FROM wtl_tmp";
                 $strDone = 'hinzugefügt';
             }
@@ -115,13 +115,13 @@ function makeSets($dbId,$sqlTable,$fieldType,$withCheckbox,$boxHeader)
                     lastEditor = '".$_SESSION['intern']['realname']."'".$sqlField;
                 $strDone = 'hinzugefügt';
             }
-            $result = mysql_query($SQL_Befehl_Write, $dbId);
-            $quantity = mysql_affected_rows($dbId);
+            $result = mysqli_query($dbId,$SQL_Befehl_Write);
+            $quantity = mysqli_affected_rows($dbId);
             if( ($quantity == 1) && ($result === TRUE) )
             {
                 $headText .= '<p><b>Der Datensatz '.$_POST['setName'].' wurde erfolgreich '.$strDone.'.</b></p>';
             }
-            mysql_query("DROP TABLE wtl_tmp", $dbId);
+            mysqli_query($dbId,"DROP TABLE wtl_tmp");
         }
         // wenn Eingaben fehlerhaft
         else
@@ -143,8 +143,8 @@ function makeSets($dbId,$sqlTable,$fieldType,$withCheckbox,$boxHeader)
         {
             $sqlField = " AND fieldType = '".$fieldType."'";
         }
-        $result_read = mysql_query("SELECT id, setName".$sqlSelect." FROM ".$sqlTable." WHERE isSet = '1'".$sqlField." GROUP BY setNo ASC ORDER BY setName ASC", $dbId);
-        $quantity_data = mysql_num_rows($result_read);
+        $result_read = mysqli_query($dbId,"SELECT id, setName".$sqlSelect." FROM ".$sqlTable." WHERE isSet = '1'".$sqlField." GROUP BY setNo ASC ORDER BY setName ASC");
+        $quantity_data = mysqli_num_rows($result_read);
         // Tabelle für die Set-Anzeige bauen
         echo "<div class='sets'>";
         echo "<form name='sets_form' method='post' action='".htmlspecialchars($_SERVER['REQUEST_URI'])."'>";
@@ -161,7 +161,7 @@ function makeSets($dbId,$sqlTable,$fieldType,$withCheckbox,$boxHeader)
                 $rows[0] = array('Set-Name','','','','');
             }
             $i = 1;
-            while( $daten_1 = mysql_fetch_object($result_read) )
+            while( $daten_1 = mysqli_fetch_object($result_read) )
             {
                 if( !isset($_POST['assumeSet']) )
                 {
@@ -299,8 +299,8 @@ function select_list_formular($dbId,$sqlTable,$headline,$selText)
     // Auswahlfelder erstellen
     $fieldClass = array('listId'=>'Selectfield');
     $SQL_Befehl_Read = "SELECT id, setName FROM ".$sqlTable." ORDER BY setName ASC";
-    $result = mysql_query($SQL_Befehl_Read, $dbId);
-    if( mysql_num_rows($result) != 0 )
+    $result = mysqli_query($dbId,$SQL_Befehl_Read);
+    if( mysqli_num_rows($result) != 0 )
     {
         echo "<p><b>".$headline." :</b></p>";
         echo "
@@ -310,7 +310,7 @@ function select_list_formular($dbId,$sqlTable,$headline,$selText)
                 <tr>
                     <td>".$selText." :</td>
                     <td><select name='listId' class='".$fieldClass['listId']."' size='3'>";
-                    while( $data = mysql_fetch_object($result) )
+                    while( $data = mysqli_fetch_object($result) )
                     {
                         echo "<option ";if($_POST['listId']==$data->id){echo "selected='selected'";}
                         echo" value='".$data->id."'>".$data->setName."</option>";
@@ -340,15 +340,15 @@ function namesFromSelFields($dbId,$sqlTablePrefix,$listId,$listFieldName,$return
 {
     $returnValues = array();
     // Feldnamen die zum anzeigen ausgewählt wurden
-    $result = mysql_query("SELECT ".$listFieldName." FROM ".$sqlTablePrefix."_lists WHERE id = '".$listId."'",$dbId);
-    $fieldArray = mysql_fetch_row($result);
+    $result = mysqli_query($dbId,"SELECT ".$listFieldName." FROM ".$sqlTablePrefix."_lists WHERE id = '".$listId."'");
+    $fieldArray = mysqli_fetch_row($result);
     $returnValues[0] = $fieldArray[0];
     foreach( unserialize($fieldArray[0]) as $viewField )
     {
         if( $viewField )
         {
-            $result = mysql_query("SELECT caption FROM ".$sqlTablePrefix."_fields WHERE id = '".$viewField."'",$dbId);
-            $captionArray = mysql_fetch_row($result);
+            $result = mysqli_query($dbId,"SELECT caption FROM ".$sqlTablePrefix."_fields WHERE id = '".$viewField."'");
+            $captionArray = mysqli_fetch_row($result);
             array_push($returnArray,$captionArray[0]);
         }
     }
@@ -377,14 +377,14 @@ function dataFromSelFields($dbId,$sqlTablePrefix,$selFieldArray,$dataIdArray,$re
             if( $index !== FALSE )
             {
                 $value = $dataIdArray[$index];
-                $result = mysql_query("SELECT fieldType, setNo FROM ".$sqlTablePrefix."_fields WHERE id = '".$fieldId."'",$dbId);
-                $fieldArray = mysql_fetch_row($result);
+                $result = mysqli_query($dbId,"SELECT fieldType, setNo FROM ".$sqlTablePrefix."_fields WHERE id = '".$fieldId."'");
+                $fieldArray = mysqli_fetch_row($result);
                 if( $fieldArray[0] == 'dropdown' )
                 {
                     $SQL_Befehl_Read = "SELECT dataLabel FROM ".$sqlTablePrefix."_fields WHERE isSet != '1' AND setNo = '".$fieldArray[1]."'
                         AND data = '".ltrim(strstr(trim($value,'#'),';'),';')."'";
-                    $result = mysql_query($SQL_Befehl_Read,$dbId);
-                    $dataArray = mysql_fetch_row($result);
+                    $result = mysqli_query($dbId,$SQL_Befehl_Read);
+                    $dataArray = mysqli_fetch_row($result);
                     array_push($returnArray,$dataArray[0]);
                 }
                 if( $fieldArray[0] == 'input' )
@@ -409,8 +409,8 @@ function dataFromSelFields($dbId,$sqlTablePrefix,$selFieldArray,$dataIdArray,$re
 // NO RETURN
 function make_dropdown_list($dbId,$sqlTable,$sqlCond,$selected,$nothing)
 {
-    $result = mysql_query("SELECT id, setName FROM ".$sqlTable." ".$sqlCond." ORDER BY setName ASC", $dbId);
-    while( $data = mysql_fetch_object($result) )
+    $result = mysqli_query($dbId,"SELECT id, setName FROM ".$sqlTable." ".$sqlCond." ORDER BY setName ASC");
+    while( $data = mysqli_fetch_object($result) )
     {
         echo "<option ";if(in_array($data->id,$selected)){echo "selected='selected'";}
         echo" value='".$data->id."'>".$data->setName."</option>";

@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.2
- * @date - time  19.02.2014 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -30,8 +30,8 @@ function checkInputfields($dbId,$sqlTable,$fields,$returnArray)
     {
         if( $id != '' )
         {
-            $result = mysql_query("SELECT notRequ, charReg, charLength, regEx FROM ".$sqlTable." WHERE id = '".$id."'",$dbId);
-            while( $daten = mysql_fetch_object($result) )
+            $result = mysqli_query($dbId,"SELECT notRequ, charReg, charLength, regEx FROM ".$sqlTable." WHERE id = '".$id."'");
+            while( $daten = mysqli_fetch_object($result) )
             {
                 $notRequ = $daten->notRequ;
                 $charLengthArray = unserialize($daten->charLength);
@@ -136,8 +136,8 @@ function checkCheckboxfields($dbId,$sqlTable,$fields,$returnArray)
     // wenn Optionsfelder ausgewählt
     foreach( $fields as $id )
     {
-        $result = mysql_query("SELECT notRequ FROM ".$sqlTable." WHERE id = '".$id."'",$dbId);
-        $notRequArray = mysql_fetch_row($result);
+        $result = mysqli_query($dbId,"SELECT notRequ FROM ".$sqlTable." WHERE id = '".$id."'");
+        $notRequArray = mysqli_fetch_row($result);
         if( ($id != '') && !($notRequArray[0]) )
         {
             if( (!isset($_POST['check_'.$id])) || ($_POST['check_'.$id] == '') )

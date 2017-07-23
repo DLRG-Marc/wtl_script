@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.6.0
- * @date - time  23.04.2014 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -26,7 +26,7 @@
     // Settings
     require_once('f_sets.php');
     require_once('f_wtl.php');
-    $entryId = mysql_real_escape_string($_GET['entryId']);
+    $entryId = mysqli_real_escape_string($dbId,$_GET['entryId']);
     if( strpos($_SERVER['REQUEST_URI'],'&') === FALSE )
     {
         $script_url = $_SERVER['REQUEST_URI'];
@@ -43,12 +43,12 @@
     foreach( $_POST as $index => $val )
     {
         $_POST[$index] = trim(htmlspecialchars( $val, ENT_NOQUOTES, UTF-8 ));
-        $MYSQL[$index] = mysql_real_escape_string($_POST[$index]);
+        $MYSQL[$index] = mysqli_real_escape_string($dbId,$_POST[$index]);
     }
     $listID = $_POST['listId'];
     if( !empty($entryId) )
     {
-        $listID = mysql_real_escape_string($_GET['listId']);
+        $listID = mysqli_real_escape_string($dbId,$_GET['listId']);
     }
 
     // Benutzerberechtigungen
@@ -57,8 +57,8 @@
     echo "<div id='wtl_entry_statistic'>
           <div class='waitinglist'>";
     // Daten der wtl_lists lesen
-    $result = mysql_query("SELECT setName FROM wtl_lists WHERE id = '".$listID."'",$dbId);
-    while( $daten = mysql_fetch_object($result) )
+    $result = mysqli_query($dbId,"SELECT setName FROM wtl_lists WHERE id = '".$listID."'");
+    while( $daten = mysqli_fetch_object($result) )
     {
         $listName = $daten->setName;
     }
@@ -112,21 +112,21 @@
             if( !empty($entryId) )
             {
                 // Abfrage der Details aus der DB
-                $result = mysql_query("SELECT * FROM wtl_members WHERE deleted != '1' AND entryId = '".$entryId."' ORDER BY entryTstamp", $dbId);
-                $quantity_details = mysql_num_rows($result);
+                $result = mysqli_query($dbId,"SELECT * FROM wtl_members WHERE deleted != '1' AND entryId = '".$entryId."' ORDER BY entryTstamp");
+                $quantity_details = mysqli_num_rows($result);
                 $headline = "<p><b>Details für die Aufnahmen Nr. ".$_GET['detno']."</b></p>";
                 $buttons = array();
                 wtl_make_site_view($dbId,'STATISTIC_DETAILS',$result,$listID,$quantity_details,'1','+1','',$headline,'','',$buttons);
                 echo "<p></p><p></p>";
             }
             // Alle Aufgenommenen der ausgewählten Warteliste zählen
-            $result_count = mysql_query("SELECT COUNT(*) FROM wtl_members WHERE entryId != '' AND deleted != '1' AND listId = '".$listID."'", $dbId);
-            $entryNuArray = mysql_fetch_row($result_count);
+            $result_count = mysqli_query($dbId,"SELECT COUNT(*) FROM wtl_members WHERE entryId != '' AND deleted != '1' AND listId = '".$listID."'");
+            $entryNuArray = mysqli_fetch_row($result_count);
             $entryNu = $entryNuArray[0];
             // Zusammenfassung der Aufnahmen
-            $result = mysql_query("SELECT * FROM wtl_members WHERE entryId != '' AND deleted != '1' AND
-                listId = '".$listID."' GROUP BY entryId HAVING entryId != '' ORDER BY entryTstamp DESC", $dbId);
-            $quantity_data = mysql_num_rows($result);
+            $result = mysqli_query($dbId,"SELECT * FROM wtl_members WHERE entryId != '' AND deleted != '1' AND
+                listId = '".$listID."' GROUP BY entryId HAVING entryId != '' ORDER BY entryTstamp DESC");
+            $quantity_data = mysqli_num_rows($result);
             if( $quantity_data == 1 )
             {
                 $headline = "<p><b>Es ist bisher ".$quantity_data." Aufnahme mit ingesamt ".$entryNu.
@@ -171,17 +171,17 @@
                 if( isset($_POST['send_dates']) )
                 {
                     // Rückmeldungen zählen
-                    $result_count = mysql_query("SELECT COUNT(*) FROM wtl_members WHERE entryId != '' AND deleted != '1' AND confirm = '2'
-                        AND listId = '".$listID."' AND entryTstamp >= '".$startdate."' AND entryTstamp < '".$enddate."'", $dbId);
-                    $confYesArray = mysql_fetch_row($result_count);
+                    $result_count = mysqli_query($dbId,"SELECT COUNT(*) FROM wtl_members WHERE entryId != '' AND deleted != '1' AND confirm = '2'
+                        AND listId = '".$listID."' AND entryTstamp >= '".$startdate."' AND entryTstamp < '".$enddate."'");
+                    $confYesArray = mysqli_fetch_row($result_count);
                     $confYesNu = $confYesArray[0];
-                    $result_count = mysql_query("SELECT COUNT(*) FROM wtl_members WHERE entryId != '' AND deleted != '1' AND confirm = '1'
-                        AND listId = '".$listID."' AND entryTstamp >= '".$startdate."' AND entryTstamp < '".$enddate."'", $dbId);
-                    $confNoArray = mysql_fetch_row($result_count);
+                    $result_count = mysqli_query($dbId,"SELECT COUNT(*) FROM wtl_members WHERE entryId != '' AND deleted != '1' AND confirm = '1'
+                        AND listId = '".$listID."' AND entryTstamp >= '".$startdate."' AND entryTstamp < '".$enddate."'");
+                    $confNoArray = mysqli_fetch_row($result_count);
                     $confNoNu = $confNoArray[0];
-                    $result_count = mysql_query("SELECT COUNT(*) FROM wtl_members WHERE entryId != '' AND deleted != '1' AND confirm = '0'
-                        AND listId = '".$listID."' AND entryTstamp >= '".$startdate."' AND entryTstamp < '".$enddate."'", $dbId);
-                    $confNotArray = mysql_fetch_row($result_count);
+                    $result_count = mysqli_query($dbId,"SELECT COUNT(*) FROM wtl_members WHERE entryId != '' AND deleted != '1' AND confirm = '0'
+                        AND listId = '".$listID."' AND entryTstamp >= '".$startdate."' AND entryTstamp < '".$enddate."'");
+                    $confNotArray = mysqli_fetch_row($result_count);
                     $confNotNu = $confNotArray[0];
                     // grafischer Aufbau
                     kreisdiagramm(10,'nicht gemeldet:'.$confNotNu.':gelb,Teilnahme Nein:'.$confNoNu.':rot,Teilnahme Ja:'.$confYesNu.':gruen','',350,150);

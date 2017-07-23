@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -44,14 +44,14 @@
     {
         if( !empty($_POST['confirmed']) )
         {
-            $confirmed = " AND confirm = '".mysql_real_escape_string($_POST['confirmed'])."'";
+            $confirmed = " AND confirm = '".mysqli_real_escape_string($dbId,$_POST['confirmed'])."'";
         }
         if( !empty($_POST['entryId']) )
         {
-            $entry = " AND entryId = '".mysql_real_escape_string($_POST['entryId'])."'";
+            $entry = " AND entryId = '".mysqli_real_escape_string($dbId,$_POST['entryId'])."'";
         }
         $fileCSV_export = $GLOBALS['SYSTEM_SETTINGS']['FILE_PATH']."wtl_export_".$_POST['listId'].".csv";
-        downloadTableDataToCSVfile($dbId,'wtl','wtl_members',mysql_real_escape_string($_POST['listId']),$fileCSV_export,"deleted != '1'".$confirmed.$entry." ORDER BY dateOfBirth DESC");
+        downloadTableDataToCSVfile($dbId,'wtl','wtl_members',mysqli_real_escape_string($_POST['listId']),$fileCSV_export,"deleted != '1'".$confirmed.$entry." ORDER BY dateOfBirth DESC");
         // Passenden Datentyp erzeugen
         header("Content-Type: application/csv");
         header("Content-Disposition: attachment; filename=\"".basename($fileCSV_export)."\"");

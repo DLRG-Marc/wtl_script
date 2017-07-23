@@ -24,7 +24,7 @@
 
 
 // Version
-define('VERSION', '1.6.0');
+define('VERSION', '1.7.0');
 
 // Daten der Mysql-Datenbank
 $GLOBALS['DB_SETTINGS']['HOST'] = 'mysql.dlrg.de';  // muss normalerweise nicht geändert werden

@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.6.0
- * @date - time  03.05.2013 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -25,7 +25,7 @@
 
     // Settings
     require_once('f_sets.php');
-    $setID = mysql_real_escape_string($_GET['setID']);
+    $setID = mysqli_real_escape_string($dbId,$_GET['setID']);
     if( strpos($_SERVER['REQUEST_URI'],'&') === FALSE )
     {
         $script_url = $_SERVER['REQUEST_URI'];
@@ -57,7 +57,7 @@
     foreach( $_POST as $index => $val )
     {
         $_POST[$index] = trim(htmlspecialchars( $val, ENT_NOQUOTES, UTF-8 ));
-        $MYSQL[$index] = mysql_real_escape_string($_POST[$index]);
+        $MYSQL[$index] = mysqli_real_escape_string($dbId,$_POST[$index]);
     }
 
     echo "<div id='wtl_inputfields'>
@@ -128,8 +128,8 @@
                 $SQL_Befehl_Write = "UPDATE wtl_fields SET caption = '".$MYSQL['caption']."', charReg = '".$MYSQL['charReg']."',
                     regEx = '".$MYSQL['regEx']."', charLength = '".$MYSQL['charLength']."', fieldSize = '".$MYSQL['fieldSize']."',
                     notRequ = '".$MYSQL['notRequiered']."', lastEditor = '".$username."' WHERE id = '".$setID."'";
-                $result = mysql_query($SQL_Befehl_Write,$dbId);
-                if( (mysql_affected_rows($dbId) == 1) )
+                $result = mysqli_query($dbId,$SQL_Befehl_Write);
+                if( (mysqli_affected_rows($dbId) == 1) )
                 {
                     $message = "<p><b>Du hast erfolgreich die Einstellungen des Eingabefeldes '".$_POST['setName']."' geändert !</b></p>
                         <p><a href='".$script_url."'>zurück zu den Einstellungen.</a></p>";
@@ -147,8 +147,8 @@
         if( !$errorPage )
         {
             // Daten neu einlesen
-            $result = mysql_query("SELECT * FROM wtl_fields WHERE id = '".$setID."'",$dbId);
-            while( $data = mysql_fetch_object($result) )
+            $result = mysqli_query($dbId,"SELECT * FROM wtl_fields WHERE id = '".$setID."'");
+            while( $data = mysqli_fetch_object($result) )
             {
                 $_POST['setName'] = $data->setName;
                 $_POST['caption'] = $data->caption;

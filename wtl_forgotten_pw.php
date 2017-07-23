@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.6.0
- * @date - time  03.05.2014 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -24,7 +24,7 @@
 
 
     // Settings
-    $listID = mysql_real_escape_string($_GET['listID']);
+    $listID = mysqli_real_escape_string($dbId,$_GET['listID']);
 
     echo "<div id='wtl_forgotten_pw'>
           <div class='waitinglist'>";

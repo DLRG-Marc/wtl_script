@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.6.0
- * @date - time  15.03.2015 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -26,9 +26,9 @@
     // Settings
     require_once('f_fields.php');
     require_once('f_wtl.php');
-    $listID = mysql_real_escape_string($_GET['listID']);
-    $data = mysql_real_escape_string($_GET['data']);
-    $entryToken = mysql_real_escape_string($_GET['entryToken']);
+    $listID = mysqli_real_escape_string($dbId,$_GET['listID']);
+    $data = mysqli_real_escape_string($dbId,$_GET['data']);
+    $entryToken = mysqli_real_escape_string($dbId,$_GET['entryToken']);
     if( strpos($_SERVER['REQUEST_URI'],'&') === FALSE )
     {
         $script_url = $_SERVER['REQUEST_URI'];
@@ -53,7 +53,7 @@
     foreach( $_POST as $index => $val )
     {
         $_POST[$index] = trim(htmlspecialchars( $val, ENT_NOQUOTES, UTF-8 ));
-        $MYSQL[$index] = mysql_real_escape_string(stripslashes($_POST[$index]));
+        $MYSQL[$index] = mysqli_real_escape_string($dbId,stripslashes($_POST[$index]));
     }
 
     // bei Anmeldenummer bzw. bei Bestätigung richtige listID. heraussuchen
@@ -64,8 +64,8 @@
         {
             $SQL_Befehl_Read = "SELECT listId FROM wtl_members WHERE registerId = '".substr(base64_decode($entryToken),0,6)."'";
         }
-        $result = mysql_query($SQL_Befehl_Read,$dbId);
-        $listNoArray = mysql_fetch_row($result);
+        $result = mysqli_query($dbId,$SQL_Befehl_Read);
+        $listNoArray = mysqli_fetch_row($result);
         $listID = $listNoArray[0];
     }
     elseif( isset($_POST['sendEdit']) || isset($_POST['sendPredelete']) || isset($_POST['sendDelete']) )
@@ -77,8 +77,8 @@
     $authority = checkAuthority($dbId,'wtl_user','registerAuth',$listID);
 
     // Daten der wtl_lists lesen
-    $result = mysql_query("SELECT * FROM wtl_lists WHERE id = '".$listID."'",$dbId);
-    while( $daten = mysql_fetch_object($result) )
+    $result = mysqli_query($dbId,"SELECT * FROM wtl_lists WHERE id = '".$listID."'");
+    while( $daten = mysqli_fetch_object($result) )
     {
         $published = $daten->published;
         $dlrgName = $daten->dlrgName;
@@ -216,17 +216,17 @@
                 firstname = '".$firstname."', lastname = '".$lastname."', dateOfBirth = '".$dateOfBirth."', mail = '".$MYSQL['mail']."',
                 inputs = '".$inputs."', selected = '".$selects."', lastEditor = '".$username."'";
             // Prüfen, ob Eintrag schon vorhanden ist
-            $result = mysql_query($SQL_Befehl_Write,$dbId);
-            if( !$result && (mysql_errno() == 1062) )
+            $result = mysqli_query($dbId,$SQL_Befehl_Write);
+            if( !$result && (mysqli_errno() == 1062) )
             {
                 $displayMessage = TRUE;
                 $message = "<p><b>Deine Daten wurden bereits eingetragen !</b><br/>Ein 2. Eintrag ist nicht möglich !<br/><br/>
                    <a href='".htmlspecialchars($_SERVER['REQUEST_URI'])."'>Eine weitere Anmeldung vornehmen.</a></p>";
             }
-            if( mysql_affected_rows($dbId) == 1)
+            if( mysqli_affected_rows($dbId) == 1)
             {
                 // neu
-                $memberID = mysql_insert_id($dbId);
+                $memberID = mysqli_insert_id($dbId);
                 $sendOK = send_register_mail($dbId,$memberID,$mailadress,$registerMail,$dlrgName,$listName);
                 // Erfolgsmeldung
                 $displayMessage = TRUE;
@@ -248,24 +248,24 @@
         if( isset($_POST['sendRegisterId']) && ($input_OK === TRUE) )
         {
             // Abfrage ob Anmeldenummer existiert und nicht als gelöscht markiert ist
-            $result = mysql_query("SELECT * FROM wtl_members WHERE registerId = '".$MYSQL['registerId']."' AND deleted != '1'",$dbId);
-            if( mysql_num_rows($result) == 1 )
+            $result = mysqli_query($dbId,"SELECT * FROM wtl_members WHERE registerId = '".$MYSQL['registerId']."' AND deleted != '1'");
+            if( mysqli_num_rows($result) == 1 )
             {
-                while( $daten = mysql_fetch_object($result) )
+                while( $daten = mysqli_fetch_object($result) )
                 {
                     // wenn Person noch nicht aufgenommen wurde
                     if( empty($daten->entryId) )
                     {
                         // Anzahl Wartender errechnen
-                        $resultNo = mysql_query("SELECT COUNT(*) FROM wtl_members WHERE listId = '".$listID."' AND entryId = '' AND deleted != '1'",$dbId);
-                        $waitingNoArray = mysql_fetch_row($resultNo);
+                        $resultNo = mysqli_query($dbId,"SELECT COUNT(*) FROM wtl_members WHERE listId = '".$listID."' AND entryId = '' AND deleted != '1'");
+                        $waitingNoArray = mysqli_fetch_row($resultNo);
                         $waitingNo = $waitingNoArray[0];
                         // Platz errechnen
                         $SQL_Befehl_Read = "SELECT (SELECT COUNT(*) FROM wtl_members b WHERE (b.tstamp <= a.tstamp AND b.id < a.id)
                             AND listId = '".$listID."' AND entryId = '' AND deleted != '1' ORDER BY b.tstamp DESC, b.id DESC) + 1 AS position FROM wtl_members a
                             WHERE a.registerId = '".$_POST['registerId']."' AND a.listId = '".$listID."' AND a.entryId = '' AND deleted != '1'";
-                        $resultPos = mysql_query($SQL_Befehl_Read, $dbId);
-                        $waitingPosArray = mysql_fetch_row($resultPos);
+                        $resultPos = mysqli_query($dbId,$SQL_Befehl_Read);
+                        $waitingPosArray = mysqli_fetch_row($resultPos);
                         $waitingPos = $waitingPosArray[0];
                         $_POST['memberId'] = $daten->id;
                         $_POST['firstname'] = $daten->firstname;
@@ -329,13 +329,13 @@
                     lastEditor = '".$username."' WHERE id = '".$MYSQL['memberId']."'";
                 $requestURL = "<br/><br/><a href='".htmlspecialchars($_SERVER['REQUEST_URI'])."'>Einen weiteren Datensatz ändern.</a>";
             }
-            $result = mysql_query($SQL_Befehl_Write,$dbId);
-            if( mysql_affected_rows($dbId) == 1)
+            $result = mysqli_query($dbId,$SQL_Befehl_Write);
+            if( mysqli_affected_rows($dbId) == 1)
             {
                 $displayMessage = TRUE;
                 $message = "<p><b>Deine Daten wurden geändert !</b>".$requestURL."</p>";
             }
-            elseif( mysql_affected_rows($dbId) == 0)
+            elseif( mysqli_affected_rows($dbId) == 0)
             {
                 $displayMessage = TRUE;
                 $message = "<p><b>Es wurden keine Daten geändert !</b>".$requestURL."</p>";
@@ -371,8 +371,8 @@
         // bei Daten löschen
         if( isset($_POST['sendDelete']) )
         {
-            $result = mysql_query("UPDATE wtl_members SET deleted = '1' WHERE id = '".$MYSQL['memberId']."'",$dbId);
-            if( mysql_affected_rows($dbId) == 1)
+            $result = mysqli_query($dbId,"UPDATE wtl_members SET deleted = '1' WHERE id = '".$MYSQL['memberId']."'");
+            if( mysqli_affected_rows($dbId) == 1 )
             {
                 $displayMessage = TRUE;
                 $message = "<p><b>Deine Daten wurden aus der Warteliste gelöscht !</b><br/><br/><a href='".htmlspecialchars($_SERVER['REQUEST_URI'])."'>Einen weiteren Datensatz ändern.</a></p>";
@@ -391,10 +391,10 @@
             $confirmData = base64_decode($entryToken);
             $SQL_Befehl_Read = "SELECT * FROM wtl_members WHERE registerId = '".substr($confirmData,0,6)."'
                 AND entryId = '".substr($confirmData,6,6)."' AND deleted != '1'";
-            $result = mysql_query($SQL_Befehl_Read, $dbId);
-            if( mysql_num_rows($result) == 1 )
+            $result = mysqli_query($dbId,$SQL_Befehl_Read);
+            if( mysqli_num_rows($result) == 1 )
             {
-                while( $daten = mysql_fetch_object($result) )
+                while( $daten = mysqli_fetch_object($result) )
                 {
                     $id = $daten->listId;
                     $confirm = $daten->confirm;
@@ -406,8 +406,8 @@
                     $_POST['firstname'] = $daten->firstname;
                     $_POST['lastname'] = $daten->lastname;
                 }
-                $result = mysql_query("SELECT setName FROM wtl_lists WHERE id = '".$id."'",$dbId);
-                $listNameArray = mysql_fetch_row($result);
+                $result = mysqli_query($dbId,"SELECT setName FROM wtl_lists WHERE id = '".$id."'");
+                $listNameArray = mysqli_fetch_row($result);
                 $confirmOK = TRUE;
                 $message = "<p>Hier bestätigst Du die Aufnahme aus der Warteliste ".$listNameArray[0]." für<br/>
                     <b>".$_POST['firstname']." ".$_POST['lastname']."</b><br/>
@@ -437,15 +437,15 @@
             $confirmData = base64_decode($entryToken);
             $SQL_Befehl_Write = "UPDATE wtl_members SET confirm = '".$_POST['confirm']."', confirmTstamp = '".time()."'
                 WHERE registerId = '".substr($confirmData,0,6)."' AND entryId = '".substr($confirmData,6,6)."' AND deleted != '1'";
-            $result = mysql_query($SQL_Befehl_Write,$dbId);
-            if( mysql_affected_rows($dbId) == 1)
+            $result = mysqli_query($dbId,$SQL_Befehl_Write);
+            if( mysqli_affected_rows($dbId) == 1 )
             {
                 $displayMessage = TRUE;
                 $message = "<p><b>Deine Rückmeldung wurde erfolgreich in die Datenbank eingetragen!</b></p>";
                 if( $entryConfMail == '1' )
                 {
-                    $result = mysql_query("SELECT mail FROM wtl_user WHERE id = '".$entryUserId."'",$dbId);
-                    $entryUserMailArray = mysql_fetch_row($result);
+                    $result = mysqli_query($dbId,"SELECT mail FROM wtl_user WHERE id = '".$entryUserId."'");
+                    $entryUserMailArray = mysqli_fetch_row($result);
                     $mailtext = "Hallo ".$entryUser."\n\nDie folgende Person Deiner Aufnahme aus der Warteliste ".
                         $listName." vom ".date('d.m.Y',$entryTstamp)." hat sich gemeldet:\n".$_POST['firstname']." ".$_POST['lastname']."\n".
                         "Teilnahme: ".number_to_janein($_POST['confirm'])."\n\n\n".
@@ -464,8 +464,8 @@
         // auf Anmeldung geschlossen prüfen
         if( ($autoclose == '1') && ($data != 'edit') && !isset($_POST['sendConfirm']) )
         {
-            $resultCount = mysql_query("SELECT COUNT(*) FROM wtl_members WHERE listId = '".$listID."' AND entryId = '' AND deleted != '1'",$dbId);
-            $registerCount = mysql_fetch_row($resultCount);
+            $resultCount = mysqli_query($dbId,"SELECT COUNT(*) FROM wtl_members WHERE listId = '".$listID."' AND entryId = '' AND deleted != '1'");
+            $registerCount = mysqli_fetch_row($resultCount);
             if( (time() >= $closeDate) && ($closeDate != 0) )
             {
                 $close = TRUE;

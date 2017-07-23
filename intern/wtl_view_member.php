@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.2
- * @date - time  19.02.2014 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -25,9 +25,9 @@
 
     // Settings
     require_once('f_fields.php');
-    $memberID = mysql_real_escape_string($_GET['memberID']);
-    $listID = mysql_real_escape_string($_GET['listID']);
-    $data = mysql_real_escape_string($_GET['data']);
+    $memberID = mysqli_real_escape_string($dbId,$_GET['memberID']);
+    $listID = mysqli_real_escape_string($dbId,$_GET['listID']);
+    $data = mysqli_real_escape_string($dbId,$_GET['data']);
     if( strpos($_SERVER['REQUEST_URI'],'&') === FALSE )
     {
         $script_url = $_SERVER['REQUEST_URI'];
@@ -52,8 +52,8 @@
     $authority = checkAuthority($dbId,'wtl_user','registerAuth',$listID);
 
     // Daten der wtl_lists lesen
-    $result = mysql_query("SELECT * FROM wtl_lists WHERE id = '".$listID."'",$dbId);
-    while( $daten = mysql_fetch_object($result) )
+    $result = mysqli_query($dbId,"SELECT * FROM wtl_lists WHERE id = '".$listID."'");
+    while( $daten = mysqli_fetch_object($result) )
     {
         $listName = $daten->setName;
         $inputfields = unserialize($daten->inputfields);
@@ -83,21 +83,21 @@
               <div class='waitinglist'>";
         if( $authorityView === TRUE )
         {
-            $result = mysql_query("SELECT * FROM wtl_members WHERE id = '".$memberID."' AND deleted != '1'",$dbId);
-            if( mysql_num_rows($result) == 1 )
+            $result = mysqli_query($dbId,"SELECT * FROM wtl_members WHERE id = '".$memberID."' AND deleted != '1'");
+            if( mysqli_num_rows($result) == 1 )
             {
-                while( $daten = mysql_fetch_object($result) )
+                while( $daten = mysqli_fetch_object($result) )
                 {
                     // Anzahl Wartender errechnen
-                    $resultNo = mysql_query("SELECT COUNT(*) FROM wtl_members WHERE listId = '".$listID."' AND entryId = '' AND deleted != '1'",$dbId);
-                    $waitingNoArray = mysql_fetch_row($resultNo);
+                    $resultNo = mysqli_query($dbId,"SELECT COUNT(*) FROM wtl_members WHERE listId = '".$listID."' AND entryId = '' AND deleted != '1'");
+                    $waitingNoArray = mysqli_fetch_row($resultNo);
                     $waitingNo = $waitingNoArray[0];
                     // Platz errechnen
                     $SQL_Befehl_Read = "SELECT (SELECT COUNT(*) FROM wtl_members b WHERE (b.tstamp <= a.tstamp AND b.id < a.id)
                         AND listId = '".$listID."' AND entryId = '' AND deleted != '1' ORDER BY b.tstamp DESC, b.id DESC) + 1 AS position FROM wtl_members a
                         WHERE a.id = '".$memberID."' AND a.listId = '".$listID."' AND a.entryId = '' AND deleted != '1'";
-                    $resultPos = mysql_query($SQL_Befehl_Read, $dbId);
-                    $waitingPosArray = mysql_fetch_row($resultPos);
+                    $resultPos = mysqli_query($dbId,$SQL_Befehl_Read);
+                    $waitingPosArray = mysqli_fetch_row($resultPos);
                     $waitingPos = $waitingPosArray[0];
                     // eingegebene Daten
                     $_POST['firstname'] = $daten->firstname;

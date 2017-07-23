@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.2
- * @date - time  19.02.2014 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -160,8 +160,8 @@
                 {
                     echo"<tr>";
                         $SQL_Befehl_Read = "SELECT caption, fieldSize FROM wtl_fields WHERE id = '".$id."'";
-                        $result = mysql_query($SQL_Befehl_Read,$dbId);
-                        while( $daten = mysql_fetch_object($result) )
+                        $result = mysqli_query($dbId,$SQL_Befehl_Read);
+                        while( $daten = mysqli_fetch_object($result) )
                         {
                             echo "<td>".nl2br($daten->caption)." :</td>";
                             $fieldSizeArray = unserialize($daten->fieldSize);
@@ -187,8 +187,8 @@
                 {
                     echo"<tr>";
                         $SQL_Befehl_Read = "SELECT setNo, caption FROM wtl_fields WHERE id = '".$id."'";
-                        $result = mysql_query($SQL_Befehl_Read,$dbId);
-                        while( $daten = mysql_fetch_object($result) )
+                        $result = mysqli_query($dbId,$SQL_Befehl_Read);
+                        while( $daten = mysqli_fetch_object($result) )
                         {
                             $setNo = $daten->setNo;
                             echo "<td>".nl2br($daten->caption)." :</td>";
@@ -198,8 +198,8 @@
                                 title='".$errorTitle[$id]."'".$readonly.">";
                             $SQL_Befehl_Read = "SELECT data, dataLabel FROM wtl_fields WHERE isSet != '1' AND setNo = '".$setNo."'
                                 ORDER BY id ASC";
-                            $result = mysql_query($SQL_Befehl_Read,$dbId);
-                            while( $daten = mysql_fetch_object($result) )
+                            $result = mysqli_query($dbId,$SQL_Befehl_Read);
+                            while( $daten = mysqli_fetch_object($result) )
                             {
                                 echo "<option ";if($_POST[$id]==$daten->data){echo "selected='selected'";}
                                 echo" value='".$daten->data."'>".$daten->dataLabel."</option>";

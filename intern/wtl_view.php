@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.6.0
- * @date - time  15.03.2015 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -26,9 +26,9 @@
     // Settings
     require_once('f_sets.php');
     require_once('f_wtl.php');
-    $listID = mysql_real_escape_string($_GET['listID']);
-    $delID = mysql_real_escape_string($_GET['delID']);
-    $mailID = mysql_real_escape_string($_GET['mailID']);
+    $listID = mysqli_real_escape_string($dbId,$_GET['listID']);
+    $delID = mysqli_real_escape_string($dbId,$_GET['delID']);
+    $mailID = mysqli_real_escape_string($dbId,$_GET['mailID']);
     if( strpos($_SERVER['REQUEST_URI'],'&') === FALSE )
     {
         $script_url = $_SERVER['REQUEST_URI'];
@@ -50,7 +50,7 @@
     foreach( $_POST as $index => $val )
     {
         $_POST[$index] = trim(htmlspecialchars( $val, ENT_NOQUOTES, UTF-8 ));
-        $MYSQL[$index] = mysql_real_escape_string($_POST[$index]);
+        $MYSQL[$index] = mysqli_real_escape_string($dbId,$_POST[$index]);
     }
     $_POST['selected'] = unserialize($_POST['selected']);
     if( empty($listID) )
@@ -77,8 +77,8 @@
     echo "<div id='wtl_view'>
           <div class='waitinglist'>";
     // Daten der wtl_lists lesen
-    $result = mysql_query("SELECT setName, dlrgName, mailadress, registerMail, infoMail FROM wtl_lists WHERE id = '".$listID."'",$dbId);
-    while( $daten = mysql_fetch_object($result) )
+    $result = mysqli_query($dbId,"SELECT setName, dlrgName, mailadress, registerMail, infoMail FROM wtl_lists WHERE id = '".$listID."'");
+    while( $daten = mysqli_fetch_object($result) )
     {
         $listName = $daten->setName;
         $dlrgName = $daten->dlrgName;
@@ -94,12 +94,12 @@
         {
             echo "<h1>Personen in eine andere Warteliste verschieben</h1>";
             $id_all = array_to_text_with_trenner($_POST['selected'], "' OR id = '");
-            $result = mysql_query( "SELECT * FROM wtl_members WHERE listId = '".$listID."' AND (id = '".$id_all."')",$dbId);
-            $quantity = mysql_num_rows($result);
+            $result = mysqli_query($dbId,"SELECT * FROM wtl_members WHERE listId = '".$listID."' AND (id = '".$id_all."')");
+            $quantity = mysqli_num_rows($result);
             $headline = "<p><b>Diese Personen werden in die folgende auszuwählende Warteliste verschoben:</b></p>";
             $textBefore = "<p><select name='newListID' size='1'>";
-            $result_lists = mysql_query("SELECT id, setName FROM wtl_lists WHERE id != '".$listID."'",$dbId);
-            while( $data = mysql_fetch_object($result_lists) )
+            $result_lists = mysqli_query($dbId,"SELECT id, setName FROM wtl_lists WHERE id != '".$listID."'");
+            while( $data = mysqli_fetch_object($result_lists) )
             {
                 $textBefore .= "<option value='".$data->id."'>".$data->setName."</option>";
             }
@@ -116,13 +116,13 @@
         if( isset($_POST['sendMoveList']) && ($authorityMail === TRUE) )
         {
             echo "<h1>Personen in eine andere Warteliste verschieben</h1>";
-            $result_lists = mysql_query("SELECT setName FROM wtl_lists WHERE id = '".$MYSQL['newListID']."'",$dbId);
-            $newListName = mysql_fetch_row($result_lists);
+            $result_lists = mysqli_query($dbId,"SELECT setName FROM wtl_lists WHERE id = '".$MYSQL['newListID']."'");
+            $newListName = mysqli_fetch_row($result_lists);
             $id_all = array_to_text_with_trenner(unserialize(stripslashes($_POST['selected'])), "' OR id = '");
             $SQL_Befehl_Write = "UPDATE wtl_members SET listId = '".$MYSQL['newListID']."', lastEditor = '".$username."'
                 WHERE id = '".$id_all."'";
-            $result = mysql_query($SQL_Befehl_Write,$dbId);
-            $quantity = mysql_affected_rows($dbId);
+            $result = mysqli_query($dbId,$SQL_Befehl_Write);
+            $quantity = mysqli_affected_rows($dbId);
             if( $quantity >= 0 )
             {
                 echo "<p><b>Es wurden ".$quantity." Personen in die Warteliste ".$newListName[0]." verschoben.</b></p>";
@@ -163,17 +163,17 @@
         {
             echo "<h1>Personen eine Email senden</h1>";
             $SQL_Befehl_Write = "UPDATE wtl_lists SET infoMail = '".$MYSQL['infoMail']."' WHERE id = '".$listID."'";
-            $result = mysql_query($SQL_Befehl_Write, $dbId);
+            $result = mysqli_query($dbId,$SQL_Befehl_Write);
             $infoMail = html_entity_decode($_POST['infoMail'],ENT_QUOTES,'UTF-8');
             if( $result != FALSE )
             {
                 $id_all = array_to_text_with_trenner(unserialize(stripslashes($_POST['selected'])), "' OR id = '");
-                $result_view = mysql_query( "SELECT * FROM wtl_members WHERE listId = '".$listID."' AND (id = '".$id_all."')",$dbId);
-                $quantity = mysql_num_rows($result_view);
+                $result_view = mysqli_query($dbId,"SELECT * FROM wtl_members WHERE listId = '".$listID."' AND (id = '".$id_all."')");
+                $quantity = mysqli_num_rows($result_view);
                 $headline = "<p><b>An diese Personen wird die folgende Email gesendet:<br>Infomail am Beispiel des ersten Empfängers.</b></p>";
                 // Daten der wtl_user lesen
-                $result_user = mysql_query("SELECT id, mail, phone FROM wtl_user WHERE id = '".$_SESSION['intern']['userId']."'",$dbId);
-                while( $daten = mysql_fetch_object($result_user) )
+                $result_user = mysqli_query($dbId,"SELECT id, mail, phone FROM wtl_user WHERE id = '".$_SESSION['intern']['userId']."'");
+                while( $daten = mysqli_fetch_object($result_user) )
                 {
                     $usermail = $daten->mail;
                     $userphone = $daten->phone;
@@ -185,7 +185,7 @@
                     <input class='button' type='button' name='cancel' value='Abbrechen' onclick=\"location.href='".$script_url."&amp;listID=".$listID."'\"/>
                     <input name='listId' type='hidden' value='".$listID."'/>
                     <input name='selected' type='hidden' value='".stripslashes($_POST['selected'])."'/></p>";
-                mysql_data_seek($result_view,0);
+                mysqli_data_seek($result_view,0);
                 wtl_make_site_view($dbId,'REGISTER',$result_view,$listID,$quantity,$quantity,-1,'',$headline,$textBefore,'',$buttons);
             }
             else
@@ -199,15 +199,15 @@
         if( isset($_POST['sendMail']) && ($authorityMail === TRUE) )
         {
             // Daten der wtl_user lesen
-            $result = mysql_query("SELECT id, mail, phone FROM wtl_user WHERE id = '".$_SESSION['intern']['userId']."'",$dbId);
-            while( $daten = mysql_fetch_object($result) )
+            $result = mysqli_query($dbId,"SELECT id, mail, phone FROM wtl_user WHERE id = '".$_SESSION['intern']['userId']."'");
+            while( $daten = mysqli_fetch_object($result) )
             {
                 $usermail = $daten->mail;
                 $userphone = $daten->phone;
             }
             echo "<h1>Personen eine Infomail zusenden</h1>";
             $id_all = array_to_text_with_trenner(unserialize(stripslashes($_POST['selected'])), "' OR id = '");
-            $result_view = mysql_query( "SELECT * FROM wtl_members WHERE listId = '".$listID."' AND (id = '".$id_all."')",$dbId);
+            $result_view = mysqli_query($dbId,"SELECT * FROM wtl_members WHERE listId = '".$listID."' AND (id = '".$id_all."')");
             $sendOK = send_entry_mail($dbId,TRUE,$infoMail,$mailadress,$result_view,'Information zur Warteliste',$listName,$dlrgName,$username,$usermail,$userphone);
             if( ($sendOK[0] == TRUE) && ($sendOK[1] > 0) )
             {
@@ -238,8 +238,8 @@
         if( !empty($delID) && !isset($_POST['sendDelete']) && ($authorityDelete === TRUE) )
         {
             echo "<h1>Person aus der Warteliste ".$listName." löschen</h1>";
-            $result = mysql_query("SELECT * FROM wtl_members WHERE id = '".$delID."'",$dbId);
-            $quantity = mysql_num_rows($result);
+            $result = mysqli_query($dbId,"SELECT * FROM wtl_members WHERE id = '".$delID."'");
+            $quantity = mysqli_num_rows($result);
             $headline = "<p><b>Willst Du diese Person wirklich aus der Warteliste löschen ?</b></p>";
             $textBefore = "<p><input class='button' type='submit' name='sendDelete' value='Löschen'/>
                 <input class='button' type='button' name='cancel' value='Abbrechen' onclick=\"location.href='".$script_url."&amp;listID=".$listID."'\"/>
@@ -260,8 +260,8 @@
             echo "<h1>Person aus der Warteliste ".$listName." löschen</h1>";
             $SQL_Befehl_Write = "UPDATE wtl_members SET deleted = '1', lastEditor = '".$username."'
                 WHERE id = '".$MYSQL['deleteId']."'";
-            $result = mysql_query($SQL_Befehl_Write,$dbId);
-            if( mysql_affected_rows($dbId) == 1)
+            $result = mysqli_query($dbId,$SQL_Befehl_Write);
+            if( mysqli_affected_rows($dbId) == 1)
             {
                 echo "<p><b>Die Person wurde aus der Warteliste gelöscht !</b></p>";
             }
@@ -290,7 +290,7 @@
             // wenn suchen aktiviert
             if( isset($_POST['search']) )
             {
-                $quantity = mysql_num_rows($result);
+                $quantity = mysqli_num_rows($result);
                 if( $quantity == 1)
                 {
                     $headline = 'Die folgende Person entspricht den Suchkriterien :';
@@ -302,9 +302,9 @@
             }
             else
             {
-                $result = mysql_query("SELECT * FROM wtl_members WHERE entryId = '' AND deleted != '1' AND listId = '".$listID."'
-                    ORDER by tstamp DESC, id DESC",$dbId);
-                $quantity = mysql_num_rows($result);
+                $result = mysqli_query($dbId,"SELECT * FROM wtl_members WHERE entryId = '' AND deleted != '1' AND listId = '".$listID."'
+                    ORDER by tstamp DESC, id DESC");
+                $quantity = mysqli_num_rows($result);
                 if( $quantity == 1)
                 {
                     $headline = "Die folgende Person wartet auf Aufnahme:";

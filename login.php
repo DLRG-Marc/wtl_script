@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.5.0
- * @date - time  01.10.2013 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -41,7 +41,7 @@
     $dbId = connectDatebase();
 
     // Settings
-    $listID = mysql_real_escape_string($_GET['listID']);
+    $listID = mysqli_real_escape_string($dbId,$_GET['listID']);
     $location_prefix ="Location: http://".$_SERVER['SERVER_NAME'].rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\')."/index.php";
 
     if( isset($listID) && ($listID != '') )
@@ -59,7 +59,7 @@
                 }
                 else
                 {
-                    mysql_query("UPDATE wtl_user SET lastAction ='".time()."' WHERE id = '".$_SESSION['intern']['userId']."'",$dbId);
+                    mysqli_query($dbId,"UPDATE wtl_user SET lastAction ='".time()."' WHERE id = '".$_SESSION['intern']['userId']."'");
                     $location = $location_prefix."?doc=wtl_view";
                 }
             }

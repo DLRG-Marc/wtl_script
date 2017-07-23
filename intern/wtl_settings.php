@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.6.0
- * @date - time  03.05.2014 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -26,8 +26,8 @@
     // Settings
     require_once('f_sets.php');
     require_once('f_menu.php');
-    $setID = mysql_real_escape_string($_GET['setID']);
-    $pageNo = mysql_real_escape_string($_GET['pageNo']);
+    $setID = mysqli_real_escape_string($dbId,$_GET['setID']);
+    $pageNo = mysqli_real_escape_string($dbId,$_GET['pageNo']);
     if( strpos($_SERVER['REQUEST_URI'],'&') === FALSE )
     {
         $script_url = $_SERVER['REQUEST_URI'];
@@ -75,7 +75,7 @@
     foreach( $_POST as $index => $val )
     {
         $_POST[$index] = trim(htmlspecialchars( $val, ENT_NOQUOTES, UTF-8 ));
-        $MYSQL[$index] = mysql_real_escape_string($_POST[$index]);
+        $MYSQL[$index] = mysqli_real_escape_string($dbId,$_POST[$index]);
     }
 
     echo "<div id='wtl_settings'>
@@ -262,8 +262,8 @@
                     ageLimit = '".$MYSQL['ageLimit']."', headerTextDataEdit = '".$MYSQL['headerTextDataEdit']."', girder = '".$MYSQL['girder']."',
                     autoclose = '".$MYSQL['autoclose']."', closeDate = '".$closeDate."', registerLimit = '".$MYSQL['registerLimit']."',
                     closeText = '".$MYSQL['closeText']."', lastEditor = '".$username."' WHERE id = '".$setID."'";
-                $result = mysql_query($SQL_Befehl_Write,$dbId);
-                if( (mysql_affected_rows($dbId) == 1) && ($result === TRUE) )
+                $result = mysqli_query($dbId,$SQL_Befehl_Write);
+                if( (mysqli_affected_rows($dbId) == 1) && ($result === TRUE) )
                 {
                     $pageNo = 2;
                 }
@@ -283,8 +283,8 @@
             {
                 $SQL_Befehl_Write = "UPDATE wtl_lists SET entryMail = '".$MYSQL['entryMail']."', entryLimit = '".$MYSQL['entryLimit']."',
                     connectFields = '".$selConnectFields."', lastEditor = '".$username."' WHERE id = '".$setID."'";
-                $result = mysql_query($SQL_Befehl_Write, $dbId);
-                if( (mysql_affected_rows($dbId) == 1) && ($result === TRUE) )
+                $result = mysqli_query($dbId,$SQL_Befehl_Write);
+                if( (mysqli_affected_rows($dbId) == 1) && ($result === TRUE) )
                 {
                     $pageNo = 3;
                 }
@@ -305,8 +305,8 @@
                 $SQL_Befehl_Write = "UPDATE wtl_lists SET viewRegister = '".$MYSQL['viewRegister']."', viewEntry = '".$MYSQL['viewEntry']."',
                     viewStatistic = '".$MYSQL['viewStatistic']."', viewStatDetails = '".$MYSQL['viewStatDetails']."',
                     viewDownloads = '".$MYSQL['viewDownloads']."', lastEditor = '".$username."' WHERE id = '".$setID."'";
-                $result = mysql_query($SQL_Befehl_Write, $dbId);
-                if( (mysql_affected_rows($dbId) == 1) && ($result === TRUE) )
+                $result = mysqli_query($dbId,$SQL_Befehl_Write);
+                if( (mysqli_affected_rows($dbId) == 1) && ($result === TRUE) )
                 {
                     $pageNo = 4;
                 }
@@ -324,8 +324,8 @@
         {
             // Daten neu einlesen
             $SQL_Befehl_Read = "SELECT * FROM wtl_lists WHERE id = '".$setID."'";
-            $result = mysql_query($SQL_Befehl_Read, $dbId);
-            while( $daten = mysql_fetch_object($result) )
+            $result = mysqli_query($dbId,$SQL_Befehl_Read);
+            while( $daten = mysqli_fetch_object($result) )
             {
                 $_POST['published'] = $daten->published;
                 $_POST['dlrgName'] = $daten->dlrgName;
@@ -559,16 +559,16 @@
                                 echo "
                                 <tr>
                                 <td>Auswahlfeld<br/><b>";
-                                    $result = mysql_query("SELECT setName FROM wtl_fields WHERE id = $id ORDER BY setName ASC",$dbId);
-                                    while( $daten = mysql_fetch_object($result) )
+                                    $result = mysqli_query($dbId,"SELECT setName FROM wtl_fields WHERE id = $id ORDER BY setName ASC");
+                                    while( $daten = mysqli_fetch_object($result) )
                                     {
                                         echo $daten->setName;
                                     }
                                 echo "</b><br/>zuordnen zu :</td>
                                 <td colspan='2'><select name='".$id."' class='".$fieldClass[$id]."' size='3' title='".$errorTitle[$id]."'>";
-                                    $result = mysql_query("SELECT id, setName FROM wtl_fields WHERE isSet = 1 AND fieldType = 'dropdown' AND xChecked ='1'
-                                        AND setName NOT LIKE 'Alter%' ORDER BY setName ASC",$dbId);
-                                    while( $daten = mysql_fetch_object($result) )
+                                    $result = mysqli_query($dbId,"SELECT id, setName FROM wtl_fields WHERE isSet = 1 AND fieldType = 'dropdown' AND xChecked ='1'
+                                        AND setName NOT LIKE 'Alter%' ORDER BY setName ASC");
+                                    while( $daten = mysqli_fetch_object($result) )
                                     {
                                         echo "<option ";if($_POST[$id]==$daten->id){echo " selected='selected'";}
                                         echo" value='".$daten->id."'>".$daten->setName."</option>";

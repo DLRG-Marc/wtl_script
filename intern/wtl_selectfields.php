@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.6.0
- * @date - time  03.05.2014 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -25,7 +25,7 @@
 
     // Settings
     require_once('f_sets.php');
-    //$setID = mysql_real_escape_string($_GET['setID']);
+    //$setID = mysqli_real_escape_string($dbId,$_GET['setID']);
     if( strpos($_SERVER['REQUEST_URI'],'&') === FALSE )
     {
         $script_url = $_SERVER['REQUEST_URI'];
@@ -43,12 +43,12 @@
     foreach( $_POST as $index => $val )
     {
         $_POST[$index] = trim(htmlspecialchars( $val, ENT_NOQUOTES, UTF-8 ));
-        $MYSQL[$index] = mysql_real_escape_string($_POST[$index]);
+        $MYSQL[$index] = mysqli_real_escape_string($dbId,$_POST[$index]);
     }
     foreach( $_GET as $index => $val )
     {
         $_GET[$index] = trim(htmlspecialchars( $val, ENT_NOQUOTES, UTF-8 ));
-        $MYSQL[$index] = mysql_real_escape_string($_GET[$index]);
+        $MYSQL[$index] = mysqli_real_escape_string($dbId,$_GET[$index]);
     }
     $setID = $MYSQL['setID'];
 
@@ -68,8 +68,8 @@
         }
         else
         {
-            $result = mysql_query("SELECT setNo, setName, xChecked FROM wtl_fields WHERE id = '".$setID."'",$dbId);
-            $setArray = mysql_fetch_row($result);
+            $result = mysqli_query($dbId,"SELECT setNo, setName, xChecked FROM wtl_fields WHERE id = '".$setID."'");
+            $setArray = mysqli_fetch_row($result);
             $setNo = $setArray[0];
             $setName = $setArray[1];
             $xChecked = $setArray[2];
@@ -145,8 +145,8 @@
                             dataLabel = '".$MYSQL['dataLabel']."', lastEditor = '".$username."'";
                     }
                 }
-                $result = mysql_query($SQL_Befehl_Write,$dbId);
-                if( (mysql_affected_rows($dbId) >= 1) )
+                $result = mysqli_query($dbId,$SQL_Befehl_Write);
+                if( (mysqli_affected_rows($dbId) >= 1) )
                 {
                     $headText .= '<p><b>Der Datensatz wurde erfolgreich geändert.</b></p>';
                 }
@@ -168,8 +168,8 @@
                 <img width='16' height='16' alt='summary' src='".$img_path."summary.png'></a></p>
             ";
             // Beschriftung des Auswahlfeldes
-            $result = mysql_query("SELECT caption FROM wtl_fields WHERE id = '".$setID."'",$dbId);
-            while( $data = mysql_fetch_object($result) )
+            $result = mysqli_query($dbId,"SELECT caption FROM wtl_fields WHERE id = '".$setID."'");
+            while( $data = mysqli_fetch_object($result) )
             {
                 $_POST['caption'] = $data->caption;
             }
@@ -190,8 +190,8 @@
                 </form>
             ";
             // Abfrage der Daten aus der DB
-            $result_data_details = mysql_query("SELECT * FROM wtl_fields WHERE isSet != '1' AND setNo = '".$setNo."' ORDER BY data",$dbId);
-            $quantity_data_details = mysql_num_rows($result_data_details);
+            $result_data_details = mysqli_query($dbId,"SELECT * FROM wtl_fields WHERE isSet != '1' AND setNo = '".$setNo."' ORDER BY data");
+            $quantity_data_details = mysqli_num_rows($result_data_details);
             // Tabelle für die Auswahlfeld-Anzeige bauen
             echo "<div class='selectfields'>";
             echo "<form name='selectFields_form' method='post' action='".htmlspecialchars($_SERVER['REQUEST_URI'])."'>";
@@ -201,7 +201,7 @@
                 $rows = array();
                 $rows[0] = array('Auswahldaten','Auswahltext','','','');
                 $i = 1;
-                while( $data = mysql_fetch_object($result_data_details) )
+                while( $data = mysqli_fetch_object($result_data_details) )
                 {
                     if( !isset($_POST['assumeField']) )
                     {

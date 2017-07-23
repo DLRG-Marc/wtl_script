@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.6.0
- * @date - time  15.03.2015 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -75,7 +75,7 @@ function wtl_make_site_view($dbId,$site,$result,$listId,$quantity,$number,$updow
         // Daten für html-Tabelle (Inhalt)
         // Felder die immer angezeigt werden
         $i = 1;
-        while( $data = mysql_fetch_object($result) )
+        while( $data = mysqli_fetch_object($result) )
         {
             switch( $site )
             {
@@ -96,9 +96,11 @@ function wtl_make_site_view($dbId,$site,$result,$listId,$quantity,$number,$updow
                         calcAge(date('Y-m-d',$data->dateOfBirth)));
                 break;
                 case 'STATISTIC':
-                    $result_count = mysql_result(mysql_query("SELECT COUNT(*) FROM wtl_members WHERE deleted != '1' AND entryId = '".$data->entryId."'"),0);
+                    $result_count = mysqli_query($dbId,"SELECT COUNT(*) FROM wtl_members WHERE deleted != '1' AND entryId = '".$data->entryId."'");
+                    $entryNuArray = mysqli_fetch_row($result_count);
+                    $entryNu = $entryNuArray[0];
                     $rows[$i] = array($number,"<a href='".$script_url."&amp;listId=".$listId."&amp;detno=".$number."&amp;entryId=".$data->entryId."'>".
-                        $result_count."&nbsp;&nbsp;(Details)</a>",date('d.m.y',$data->entryTstamp),htmlspecialchars_decode($data->entryUsername));
+                        $entryNu."&nbsp;&nbsp;(Details)</a>",date('d.m.y',$data->entryTstamp),htmlspecialchars_decode($data->entryUsername));
                 break;
                 case 'STATISTIC_DETAILS':
                     $rows[$i] = array($number,date('d.m.y',$data->tstamp),"<a href='".substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'=')).
@@ -140,7 +142,7 @@ function wtl_make_site_confirmed($conf,$result,$quantity,$headline,$textBefore)
         // Daten für html-Tabelle (Inhalt)
         $number = $quantity;
         $i = 1;
-        while( $data = mysql_fetch_object($result) )
+        while( $data = mysqli_fetch_object($result) )
         {
             if( $conf == 0 )
             {
@@ -164,8 +166,8 @@ function wtl_make_site_confirmed($conf,$result,$quantity,$headline,$textBefore)
 function send_register_mail($dbId,$memberID,$senderadress,$registerMail,$dlrgName,$listName)
 {
     $retarray = array();
-    $result = mysql_query("SELECT * FROM wtl_members WHERE Id = '".$memberID."' AND deleted != '1'",$dbId);
-    while( $data = mysql_fetch_object($result) )
+    $result = mysqli_query($dbId,"SELECT * FROM wtl_members WHERE Id = '".$memberID."' AND deleted != '1'");
+    while( $data = mysqli_fetch_object($result) )
     {
         // email vorbereiten
         $data_inp_sel = $data->inputs.$data->selected;
@@ -177,13 +179,13 @@ function send_register_mail($dbId,$memberID,$senderadress,$registerMail,$dlrgNam
         {
             foreach( $matches[0] as $value )
             {
-                $result = mysql_query("SELECT id, setNo FROM wtl_fields WHERE isSet = '1' AND setName = '".trim($value,'#')."'",$dbId);
-                $field = mysql_fetch_row($result);
+                $result = mysqli_query($dbId,"SELECT id, setNo FROM wtl_fields WHERE isSet = '1' AND setName = '".trim($value,'#')."'");
+                $field = mysqli_fetch_row($result);
                 $start = (strpos($data_inp_sel,"#".$field[0].";")+2+strlen($field[0]));
                 $length = (strpos($data_inp_sel,"#",$start+1)-$start);
                 $data_search = substr($data_inp_sel,$start,$length);
-                $result = mysql_query("SELECT dataLabel FROM wtl_fields WHERE setNo = '".$field[1]."' AND data = '".$data_search."'",$dbId);
-                $label = mysql_fetch_row($result);
+                $result = mysqli_query($dbId,"SELECT dataLabel FROM wtl_fields WHERE setNo = '".$field[1]."' AND data = '".$data_search."'");
+                $label = mysqli_fetch_row($result);
                 $varReplace[] = $label[0];
             }
             $mailtext = str_replace($matches[0],$varReplace,$mailtext);
@@ -208,12 +210,12 @@ function send_entry_mail($dbId,$send,$entryMail,$mailadress,$result_view,$subtex
         $field = array();
         foreach( $fieldmatches as $setName )
         {
-            $result = mysql_query("SELECT id, setNo, xChecked, fieldType FROM wtl_fields WHERE isSet = '1' AND
-                setName = '".trim($setName,'#')."'", $dbId);
-            $field[] = mysql_fetch_row($result);
+            $result = mysqli_query($dbId,"SELECT id, setNo, xChecked, fieldType FROM wtl_fields WHERE isSet = '1' AND
+                setName = '".trim($setName,'#')."'");
+            $field[] = mysqli_fetch_row($result);
         }
     }
-    while( $daten = mysql_fetch_object($result_view) )
+    while( $daten = mysqli_fetch_object($result_view) )
     {
         $confirmLink = '<http://www.'.str_replace(array('www.','http://'),'',$_SERVER['SERVER_NAME']).
             substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'/',1)+1).$GLOBALS['SYSTEM_SETTINGS']['WTL_REGISTER_URL'].
@@ -233,16 +235,16 @@ function send_entry_mail($dbId,$send,$entryMail,$mailadress,$result_view,$subtex
                 }
                 else
                 {
-                    $result = mysql_query("SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
-                        setNo = '".$field[$fc][1]."' AND data = '".$MYSQL[$field[$fc][0]]."'", $dbId);
-                    $label = mysql_fetch_row($result);
+                    $result = mysqli_query($dbId,"SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
+                        setNo = '".$field[$fc][1]."' AND data = '".$MYSQL[$field[$fc][0]]."'");
+                    $label = mysqli_fetch_row($result);
                     $value = $label[0];
                 }
             }
             else
             {
-                $result = mysql_query("SELECT inputs, selected FROM wtl_members WHERE id = '".$daten->id."'", $dbId);
-                $data_m = mysql_fetch_row($result);
+                $result = mysqli_query($dbId,"SELECT inputs, selected FROM wtl_members WHERE id = '".$daten->id."'");
+                $data_m = mysqli_fetch_row($result);
                 if( $field[$fc][3] == 'input' )
                 {
                     $inputs = parse_inputs($data_m[0]);
@@ -251,9 +253,9 @@ function send_entry_mail($dbId,$send,$entryMail,$mailadress,$result_view,$subtex
                 else
                 {
                     $inputs = parse_inputs($data_m[1]);
-                    $result = mysql_query("SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
-                        setNo = '".$field[$fc][1]."' AND data = '".$inputs[$field[$fc][0]]."'", $dbId);
-                    $label = mysql_fetch_row($result);
+                    $result = mysqli_query($dbId,"SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
+                        setNo = '".$field[$fc][1]."' AND data = '".$inputs[$field[$fc][0]]."'");
+                    $label = mysqli_fetch_row($result);
                     $value = $label[0];
                 }
             }

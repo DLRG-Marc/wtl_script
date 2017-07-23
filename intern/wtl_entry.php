@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.6.0
- * @date - time  15.03.2015 - 19:00
+ * @WTL version  1.7.0
+ * @date - time  23.07.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -47,7 +47,7 @@
     foreach( $_POST as $index => $val )
     {
         $_POST[$index] = trim(htmlspecialchars( $val, ENT_NOQUOTES, UTF-8 ));
-        $MYSQL[$index] = mysql_real_escape_string($_POST[$index]);
+        $MYSQL[$index] = mysqli_real_escape_string($dbId,$_POST[$index]);
     }
     $_POST['selected'] = unserialize($_POST['selected']);
     $listID = $_POST['listId'];
@@ -58,8 +58,8 @@
     echo "<div id='wtl_entry'>
           <div class='waitinglist'>";
     // Daten der wtl_lists lesen
-    $result = mysql_query("SELECT * FROM wtl_lists WHERE id = '".$listID."'",$dbId);
-    while( $daten = mysql_fetch_object($result) )
+    $result = mysqli_query($dbId,"SELECT * FROM wtl_lists WHERE id = '".$listID."'");
+    while( $daten = mysqli_fetch_object($result) )
     {
         $dlrgName = $daten->dlrgName;
         $listName = $daten->setName;
@@ -180,8 +180,8 @@
                 $query .= " ORDER by tstamp ASC, id ASC LIMIT ".$MYSQL['limit'];
                 $SQL_Befehl_Read = "SELECT * FROM wtl_members WHERE entryId = '' AND deleted != '1'
                     AND listId = '".$listID."'".$query;
-                $result = mysql_query($SQL_Befehl_Read, $dbId);
-                $quantity = mysql_num_rows($result);
+                $result = mysqli_query($dbId,$SQL_Befehl_Read);
+                $quantity = mysqli_num_rows($result);
                 // Aufnahmevorschau vorbereiten
                 $titel_pdf = "Aufnahmevorschau der Warteliste ".$listName;
                 $titel = "<h1>".$titel_pdf."</h1>"; 
@@ -217,8 +217,8 @@
         {
             // Prüfen, ob Aufnahme schon erfolgt
             $SQL_Befehl_Read = "SELECT id FROM wtl_members WHERE entryId = '".$MYSQL['entryId']."'";
-            $result = mysql_query($SQL_Befehl_Read, $dbId);
-            $quantity = mysql_num_rows($result);
+            $result = mysqli_query($dbId,$SQL_Befehl_Read);
+            $quantity = mysqli_num_rows($result);
             if( $quantity != 0 )
             {
                 $displayMessage = TRUE;
@@ -228,8 +228,8 @@
             else
             {
                 // Daten der wtl_user lesen
-                $result = mysql_query("SELECT id, mail, phone FROM wtl_user WHERE id = '".$_SESSION['intern']['userId']."'",$dbId);
-                while( $daten = mysql_fetch_object($result) )
+                $result = mysqli_query($dbId,"SELECT id, mail, phone FROM wtl_user WHERE id = '".$_SESSION['intern']['userId']."'");
+                while( $daten = mysqli_fetch_object($result) )
                 {
                     $userId = $daten->id;
                     $usermail = $daten->mail;
@@ -241,8 +241,8 @@
                 $SQL_Befehl_Write = "UPDATE wtl_members SET entryId = '".$MYSQL['entryId']."', entryTstamp = '".time()."',
                     startTstamp = '".$startdate."', answerTstamp = '".$answerdate."', entryConfMail = '".$MYSQL['entryConfMail']."',
                     entryUsername = '".$username."', entryUserId = '".$userId."' WHERE id = '".$id_all."'";
-                $result = mysql_query($SQL_Befehl_Write, $dbId);
-                $quantity = mysql_affected_rows($dbId);
+                $result = mysqli_query($dbId,$SQL_Befehl_Write);
+                $quantity = mysqli_affected_rows($dbId);
                 if( ($quantity != 0) && ($result != 0) )
                 {
                     // Daten für Seite 3 bereitstellen
@@ -253,7 +253,7 @@
                     $headline = "<p><b>".str_replace(';','<br/>',$headline_pdf)."</b></p>";
                     $textBefore .= "<p><input class='button' type='button' name='to_start' value='weitere&#10;aufnehmen'
                         onclick=\"window.location.href='".$script_url."'\"/></p>";
-                    $result_view = mysql_query("SELECT * FROM wtl_members WHERE entryId != '' AND id = '".$id_all."'", $dbId);
+                    $result_view = mysqli_query($dbId,"SELECT * FROM wtl_members WHERE entryId != '' AND id = '".$id_all."'");
                     // email vorbereiten
                     $PhFix = array('#MELDEDATUM#','#VORNAME#','#NACHNAME#','#GEBDATUM#','#LISTENNAME#','#DLRGNAME#',
                         '#STARTDATUM#','#ANTWORTDATUM#','#AUFNEHMER#','#AUFNEHMERMAIL#','#AUFNEHMERTEL#','#BESTAETIGUNGSLINK#');
@@ -264,12 +264,12 @@
                         $field = array();
                         foreach( $fieldmatches as $setName )
                         {
-                            $result = mysql_query("SELECT id, setNo, xChecked, fieldType FROM wtl_fields WHERE isSet = '1' AND
-                                setName = '".trim($setName,'#')."'", $dbId);
-                            $field[] = mysql_fetch_row($result);
+                            $result = mysqli_query($dbId,"SELECT id, setNo, xChecked, fieldType FROM wtl_fields WHERE isSet = '1' AND
+                                setName = '".trim($setName,'#')."'");
+                            $field[] = mysqli_fetch_row($result);
                         }
                     }
-                    while( $daten = mysql_fetch_object($result_view) )
+                    while( $daten = mysqli_fetch_object($result_view) )
                     {
                         $confirmLink = '<http://www.'.str_replace(array('www.','http://'),'',$_SERVER['SERVER_NAME']).
                             substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'/',1)+1).$GLOBALS['SYSTEM_SETTINGS']['WTL_REGISTER_URL'].
@@ -289,16 +289,16 @@
                                 }
                                 else
                                 {
-                                    $result = mysql_query("SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
-                                        setNo = '".$field[$fc][1]."' AND data = '".$MYSQL[$field[$fc][0]]."'", $dbId);
-                                    $label = mysql_fetch_row($result);
+                                    $result = mysqli_query($dbId,"SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
+                                        setNo = '".$field[$fc][1]."' AND data = '".$MYSQL[$field[$fc][0]]."'");
+                                    $label = mysqli_fetch_row($result);
                                     $value = $label[0];
                                 }
                             }
                             else
                             {
-                                $result = mysql_query("SELECT inputs, selected FROM wtl_members WHERE id = '".$daten->id."'", $dbId);
-                                $data_m = mysql_fetch_row($result);
+                                $result = mysqli_query($dbId,"SELECT inputs, selected FROM wtl_members WHERE id = '".$daten->id."'");
+                                $data_m = mysqli_fetch_row($result);
                                 if( $field[$fc][3] == 'input' )
                                 {
                                     $inputs = parse_inputs($data_m[0]);
@@ -307,9 +307,9 @@
                                 else
                                 {
                                     $inputs = parse_inputs($data_m[1]);
-                                    $result = mysql_query("SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
-                                        setNo = '".$field[$fc][1]."' AND data = '".$inputs[$field[$fc][0]]."'", $dbId);
-                                    $label = mysql_fetch_row($result);
+                                    $result = mysqli_query($dbId,"SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
+                                        setNo = '".$field[$fc][1]."' AND data = '".$inputs[$field[$fc][0]]."'");
+                                    $label = mysqli_fetch_row($result);
                                     $value = $label[0];
                                 }
                             }
@@ -346,7 +346,7 @@
                         $headline .= "<p><b>".str_replace(';','<br/>',$text)."</b></p>";
                     }
                     $displayMessage = TRUE;
-                    mysql_data_seek($result_view,0);
+                    mysqli_data_seek($result_view,0);
                     $buttons = array();
                     wtl_make_site_view($dbId,'ENTRY',$result_view,$listID,$quantity,'1','+1',$titel,$headline,$textBefore,'',$buttons);
                 }
@@ -390,8 +390,8 @@
                 {
                     // Altersauswahl
                     echo"<tr>";
-                        $result = mysql_query("SELECT setNo, caption FROM wtl_fields WHERE id = '".$connectFields[0]['Age']."'",$dbId);
-                        while( $daten = mysql_fetch_object($result) )
+                        $result = mysqli_query($dbId,"SELECT setNo, caption FROM wtl_fields WHERE id = '".$connectFields[0]['Age']."'");
+                        while( $daten = mysqli_fetch_object($result) )
                         {
                             echo "<td>".$daten->caption." :</td>";
                             $setNo = $daten->setNo;
@@ -400,8 +400,8 @@
                             <td colspan='2'><select name='age' class='".$fieldClass['age']."' size='3' title='".$errorTitle['age']."'>";
                             $SQL_Befehl_Read = "SELECT data, dataLabel FROM wtl_fields WHERE isSet != '1' AND setNo = ".$setNo."
                                 ORDER BY dataLabel ASC";
-                            $result = mysql_query($SQL_Befehl_Read, $dbId);
-                            while( $daten = mysql_fetch_object($result) )
+                            $result = mysqli_query($dbId,$SQL_Befehl_Read);
+                            while( $daten = mysqli_fetch_object($result) )
                             {
                                 echo "<option ";if($_POST['age']==$daten->data){echo "selected='selected'";}
                                 echo" value='".$daten->data."'>".$daten->dataLabel."</option>";
@@ -413,15 +413,15 @@
                     foreach( $connectFields[1] as $id )
                     {
                         echo"<tr>";
-                            $result = mysql_query("SELECT setNo, caption FROM wtl_fields WHERE id = '".$id."'",$dbId);
-                            $field = mysql_fetch_row($result);
+                            $result = mysqli_query($dbId,"SELECT setNo, caption FROM wtl_fields WHERE id = '".$id."'");
+                            $field = mysqli_fetch_row($result);
                             echo "<td>".$field[1]." :</td>";
                             echo "
                                 <td colspan='2'><select name='".$id."' class='".$fieldClass[$id]."' size='3' title='".$errorTitle[$id]."'>";
                                 $SQL_Befehl_Read = "SELECT data, dataLabel FROM wtl_fields WHERE isSet != '1' AND setNo = '".$field[0]."'
                                     ORDER BY id ASC";
-                                $result = mysql_query($SQL_Befehl_Read, $dbId);
-                                while( $daten = mysql_fetch_object($result) )
+                                $result = mysqli_query($dbId,$SQL_Befehl_Read);
+                                while( $daten = mysqli_fetch_object($result) )
                                 {
                                     echo "<option ";if($_POST[$id]==$daten->data){echo "selected='selected'";}
                                     echo" value='".$daten->data."'>".$daten->dataLabel."</option>";
