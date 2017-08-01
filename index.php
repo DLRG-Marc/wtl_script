@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.6.0
- * @date - time  03.05.2014 - 19:00
+ * @WTL version  1.7.1
+ * @date - time  01.08.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -87,7 +87,7 @@
                 <?php echo '#menutop #i'.preg_replace("/,[ ]?/", ", #i",$_DLRG_MENU['item']) ?> {
                         background:transparent url(<?php echo glob_lyt.$_DLRG_PATH['grafik'].$_DLRG_STYLE['switch'].'/' ?>tag_white_solid.gif) no-repeat center right; }
 
-        //-->
+        -->
         </style>
         <script type="text/javascript" language="javascript" src="js/f_global.js"></script>
         <link rel="home" title="Home" href="<?php echo $_DLRG_SYS['call'].$_DLRG_INC['start']; ?>" />
@@ -162,7 +162,7 @@
                  <div id="box_header_right">
                   <a class="menubutton" id="switchcolor" accesskey="k" href="<?php echo $_DLRG_SYS['call'].$_DLRG_SYS['get']; ?>&amp;style=<?php echo ($_DLRG_STYLE['switch']=='mono')?'normal':'mono'; ?>" title="monochrom Ansicht an/aus">&nbsp;</a>
                   <a class="menubutton" id="switchsize" accesskey="g" href="<?php echo $_DLRG_SYS['call'].$_DLRG_SYS['get']; ?>&amp;style=<?php echo ($_DLRG_STYLE['switch']=='large')?'normal':'large'; ?>" title="grosse Schrift an/aus">&nbsp;</a>
-            <!--      <a class="menubutton" id="switchger" href="#" title="Deustche Sprache">&nbsp;</a>
+            <!--  <a class="menubutton" id="switchger" href="#" title="Deustche Sprache">&nbsp;</a>
                   <a class="menubutton" id="switcheng" href="#" title="Englische Sprache">&nbsp;</a>   -->
 
                  </div>

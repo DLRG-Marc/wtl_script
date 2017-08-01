@@ -2,6 +2,11 @@
 Revisions of Automatic Waitinglist
 =======================================
 
+version 1.7.1 (2017-08-01)
+---------------------------------------
+- fix error in index.php
+
+
 version 1.7.0 (2017-07-23)
 ---------------------------------------
 - changes for run in php7
