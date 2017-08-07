@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.7.0
- * @date - time  23.07.2017 - 19:00
+ * @WTL version  1.7.2
+ * @date - time  07.08.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -32,14 +32,21 @@ function errorNote()
         </tr></table></div><br/>';
 }
 
-//@return int
+//@return object
 function connectDatebase()
 {
     // Verbindung zur Datenbank herstellen
-    $dbId = mysqli_connect($GLOBALS['DB_SETTINGS']['HOST'].":".$GLOBALS['DB_SETTINGS']['PORT'],$GLOBALS['DB_SETTINGS']['USER'],
-        $GLOBALS['DB_SETTINGS']['PASSWORD']) OR die ("Keine Verbindung zum Server möglich: " .mysqli_error());
-    @mysqli_select_db($dbId,$GLOBALS['DB_SETTINGS']['DATABASE']);
-    @mysqli_query($dbId,"SET NAMES 'utf8'");
+    $dbId = mysqli_init();
+    if( !$dbId )
+    {
+      die('mysqli_init fehlgeschlagen');
+    }
+    if( !mysqli_real_connect($dbId, $GLOBALS['DB_SETTINGS']['HOST'], $GLOBALS['DB_SETTINGS']['USER'], $GLOBALS['DB_SETTINGS']['PASSWORD'], 
+      $GLOBALS['DB_SETTINGS']['DATABASE'], $GLOBALS['DB_SETTINGS']['PORT']) )
+    {
+      die('Verbindungsfehler (' . mysqli_connect_errno() . ') '. mysqli_connect_error());
+    }
+    mysqli_query($dbId,"SET NAMES 'utf8'");
     return $dbId;
 }
 
