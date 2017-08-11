@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.7.0
- * @date - time  23.07.2017 - 19:00
+ * @WTL version  1.7.3
+ * @date - time  11.08.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -128,6 +128,16 @@
                     <tr>
                         <td>Wartezeit :</td>
                         <td colspan='2'>".progressGirder($girderType,220,$waitingNo,$waitingPos,0,'1px solid #7F9DB9',$girderColors)."
+                            <div><b>Dies besagt nichts über die tatsächliche Watezeit!</b></div></td>
+                    </tr>
+                ";
+            }
+            if( ($registerId_OK === TRUE) && ($girder != '1') )
+            {
+                echo "
+                    <tr>
+                        <td>Warteplatz :</td>
+                        <td colspan='2'>".$waitingPos." von ".$waitingNo."
                             <div><b>Dies besagt nichts über die tatsächliche Watezeit!</b></div></td>
                     </tr>
                 ";

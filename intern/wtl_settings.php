@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.7.0
- * @date - time  23.07.2017 - 19:00
+ * @WTL version  1.7.3
+ * @date - time  11.08.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -42,7 +42,7 @@
     $fieldClass = array('published'=>'Field','dlrgName'=>'Field','mailadress'=>'Field','headerText'=>'Field','footerText'=>'Field','registerMail'=>'Field',
         'inputfields'=>'Selectfield','selectfields'=>'Selectfield','entryMail'=>'Field','entryLimit'=>'Field','selectAge'=>'Selectfield','ageLimit'=>'Field',
         'headerTextDataEdit'=>'Field','closeDate'=>'Field','registerLimit'=>'Field','closeText'=>'Field','viewRegister'=>'Selectfield','viewEntry'=>'Selectfield',
-        'viewStatistic'=>'Selectfield','viewStatDetails'=>'Selectfield','viewDownloads'=>'Selectfield');
+        'viewStatistic'=>'Selectfield','viewStatDetails'=>'Selectfield','viewDownloads'=>'Selectfield','feedbackMail'=>'Field');
 
     // Benutzerberechtigungen
     $authority = checkAuthority($dbId,'wtl_user','admin',$setID);
@@ -176,7 +176,7 @@
         if( isset($_POST['sendInputEntry']) )
         {
             $inputEntry_OK = TRUE;
-            if( (strlen($_POST['entryMail']) < 2) )
+            if( (strlen($_POST['entryMail']) < 10) )
             {
                 $inputEntry_OK = FALSE;
                 $fieldClass['entryMail'] = 'errorField';
@@ -193,6 +193,12 @@
                 $inputEntry_OK = FALSE;
                 $fieldClass['selectAge'] = 'errorSelectfield';
                 $errorTitle['selectAge'] = 'Es muß ein Altersfeld eingegeben werden!';
+            }
+            if( (strlen($_POST['feedbackMail']) < 10) )
+            {
+                $inputEntry_OK = FALSE;
+                $fieldClass['feedbackMail'] = 'errorField';
+                $errorTitle['feedbackMail'] = 'Es muß ein Mailtext eingegeben werden!';
             }
             foreach( unserialize(stripslashes($_POST['serSelectfields'])) as $id )
             {
@@ -282,7 +288,8 @@
             if( $inputEntry_OK )
             {
                 $SQL_Befehl_Write = "UPDATE wtl_lists SET entryMail = '".$MYSQL['entryMail']."', entryLimit = '".$MYSQL['entryLimit']."',
-                    connectFields = '".$selConnectFields."', lastEditor = '".$username."' WHERE id = '".$setID."'";
+                    connectFields = '".$selConnectFields."', feedbackMail = '".$MYSQL['feedbackMail']."', lastEditor = '".$username."'
+                    WHERE id = '".$setID."'";
                 $result = mysqli_query($dbId,$SQL_Befehl_Write);
                 if( (mysqli_affected_rows($dbId) == 1) && ($result === TRUE) )
                 {
@@ -346,6 +353,7 @@
                 $_POST['entryMail'] = html_entity_decode($daten->entryMail,ENT_QUOTES,'UTF-8');
                 $_POST['entryLimit'] = $daten->entryLimit;
                 $connectFields = unserialize($daten->connectFields);
+                $_POST['feedbackMail'] = html_entity_decode($daten->feedbackMail,ENT_QUOTES,'UTF-8');
                 $_POST['viewRegister'] = $daten->viewRegister;
                 $_POST['viewEntry'] = $daten->viewEntry;
                 $_POST['viewStatistic'] = $daten->viewStatistic;
@@ -477,8 +485,13 @@
                                 .$_POST['headerTextDataEdit']."</textarea></td>
                         </tr>
                         <tr>
-                            <td>Anzeigebalken :</td>
-                            <td><input type='checkbox' name='girder'"; if($_POST['girder']=='1'){echo " checked='checked'";}
+                            <td>Wartestatus als num. Wert :</td>
+                            <td><input type='radio' name='girder'"; if($_POST['girder']=='0' || $_POST['girder']==''){echo " checked='checked'";}
+                                echo" value='0'/></td>
+                        </tr>
+                        <tr>
+                            <td>Wartestatus als Balken :</td>
+                            <td><input type='radio' name='girder'"; if($_POST['girder']=='1'){echo " checked='checked'";}
                                 echo" value='1'/></td>
                         </tr>
                         <tr>
@@ -581,6 +594,11 @@
                             }
                         }
                         echo "
+                        <tr>
+                            <td>Emailtext für den Rückmeldelink :<br>(Diese Mail geht an den Aufnehmer) </td>
+                            <td colspan='2'><textarea class='".$fieldClass['feedbackMail']."' name='feedbackMail' cols='34' rows='5'
+                                title='".$errorTitle['feedbackMail']."'>".$_POST['feedbackMail']."</textarea></td>
+                        </tr>
                         <tr>
                             <td><input name='serSelectfields' type='hidden' value='".$_POST['selectfields']."'/>
                               <input name='setName' type='hidden' value='".$_POST['setName']."'/></td>

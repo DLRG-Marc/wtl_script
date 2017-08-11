@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.7.0
- * @date - time  23.07.2017 - 19:00
+ * @WTL version  1.7.3
+ * @date - time  11.08.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -178,7 +178,7 @@
                     $usermail = $daten->mail;
                     $userphone = $daten->phone;
                 }
-                $sendOK = send_entry_mail($dbId,FALSE,$infoMail,$mailadress,$result_view,'Information zur Warteliste',$listName,$dlrgName,$username,$usermail,$userphone);
+                $sendOK = send_entry_mail($dbId,FALSE,$listID,$MYSQL,$infoMail,$mailadress,$result_view,'Information zur Warteliste',$listName,$dlrgName,$username,$usermail,$userphone);
                 $headline .= '<p>'.$sendOK[0].'<br>';
                 $headline .= $sendOK[1].'</p>';
                 $textBefore .= "<p><input class='button' type='submit' name='sendMail' value='Mail senden'/>
@@ -208,7 +208,7 @@
             echo "<h1>Personen eine Infomail zusenden</h1>";
             $id_all = array_to_text_with_trenner(unserialize(stripslashes($_POST['selected'])), "' OR id = '");
             $result_view = mysqli_query($dbId,"SELECT * FROM wtl_members WHERE listId = '".$listID."' AND (id = '".$id_all."')");
-            $sendOK = send_entry_mail($dbId,TRUE,$infoMail,$mailadress,$result_view,'Information zur Warteliste',$listName,$dlrgName,$username,$usermail,$userphone);
+            $sendOK = send_entry_mail($dbId,TRUE,$listID,$MYSQL,$infoMail,$mailadress,$result_view,'Information zur Warteliste',$listName,$dlrgName,$username,$usermail,$userphone);
             if( ($sendOK[0] == TRUE) && ($sendOK[1] > 0) )
             {
                 echo "<p><b>Es wurde ".$sendOK[1]." Personen eine Infomail gesendet.</b></p>";

@@ -13,8 +13,8 @@
 /* General Public License for more details */
 /* at <http://www.gnu.org/licenses/>. */
 /**/
-/* @WTL version  1.6.0 */
-/* @date - time  15.03.2015 - 19:00 */
+/* @WTL version  1.7.3 */
+/* @date - time  11.08.2017 - 19:00 */
 /* @copyright    Marc Busse 2012-2020 */
 /* @author       Marc Busse <http://www.eutin.dlrg.de> */
 /* @license      GPL */
@@ -24,4 +24,10 @@
 /* Version 1.6.0 update */
 UPDATE_V160;
 ALTER TABLE `wtl_lists` ADD `infoMail` mediumtext NOT NULL;
+UPDATE_END;
+
+/* Version 1.7.3 update */
+UPDATE_V173;
+ALTER TABLE `wtl_lists` ADD `infoMail` mediumtext NOT NULL;
+ALTER TABLE `wtl_lists` ADD `feedbackMail` mediumtext NOT NULL;
 UPDATE_END;

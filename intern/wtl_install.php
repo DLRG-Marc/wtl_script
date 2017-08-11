@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.6.0
- * @date - time  15.03.2015 - 19:00
+ * @WTL version  1.7.3
+ * @date - time  11.08.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -80,12 +80,11 @@
             rename($GLOBALS['SYSTEM_SETTINGS']['GLOBAL_PATH']."/".$GLOBALS['SYSTEM_SETTINGS']['CONTENT_PATH']."menu_.inc",$GLOBALS['SYSTEM_SETTINGS']['GLOBAL_PATH']."/".$GLOBALS['SYSTEM_SETTINGS']['CONTENT_PATH']."menu.inc");
             chmod($GLOBALS['SYSTEM_SETTINGS']['GLOBAL_PATH']."/".$GLOBALS['SYSTEM_SETTINGS']['CONTENT_PATH']."menu.inc",0644);
         }
-        if( isset($_POST['updateTables']) && ($GLOBALS['INSTALL']['TABLESUPDATED'] !== TRUE))
+        if( isset($_POST['updateTables']) && ($GLOBALS['INSTALL']['TABLESCREATED'] === TRUE))
         {
             if( makeSQLtableFormSQLdata($dbId,$file,VERSION) === TRUE )
             {
                 $message = $ok_message;
-                changeGlobals("['INSTALL']['TABLESUPDATED']","FALSE","TRUE");
             }
         }
 

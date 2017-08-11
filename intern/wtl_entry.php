@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.7.0
- * @date - time  23.07.2017 - 19:00
+ * @WTL version  1.7.3
+ * @date - time  11.08.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -25,6 +25,7 @@
 
     // Settings
     require_once('f_sets.php');
+    require_once('f_fields.php');
     require_once('f_wtl.php');
     if( strpos($_SERVER['REQUEST_URI'],'&') === FALSE )
     {
@@ -65,6 +66,7 @@
         $listName = $daten->setName;
         $mailadress = $daten->mailadress;
         $entryMail = html_entity_decode($daten->entryMail,ENT_QUOTES,'UTF-8');
+        $feedbackMail = html_entity_decode($daten->feedbackMail,ENT_QUOTES,'UTF-8');
         $entryLimit = $daten->entryLimit;
         $connectFields = unserialize($daten->connectFields);
     }
@@ -254,80 +256,32 @@
                     $textBefore .= "<p><input class='button' type='button' name='to_start' value='weitere&#10;aufnehmen'
                         onclick=\"window.location.href='".$script_url."'\"/></p>";
                     $result_view = mysqli_query($dbId,"SELECT * FROM wtl_members WHERE entryId != '' AND id = '".$id_all."'");
-                    // email vorbereiten
-                    $PhFix = array('#MELDEDATUM#','#VORNAME#','#NACHNAME#','#GEBDATUM#','#LISTENNAME#','#DLRGNAME#',
-                        '#STARTDATUM#','#ANTWORTDATUM#','#AUFNEHMER#','#AUFNEHMERMAIL#','#AUFNEHMERTEL#','#BESTAETIGUNGSLINK#');
-                    $matchcount = preg_match_all('/#\w+#/',$entryMail,$matches);
-                    $fieldmatches = array_diff($matches[0],$PhFix);
-                    if( count($fieldmatches) > 0 )
-                    {
-                        $field = array();
-                        foreach( $fieldmatches as $setName )
-                        {
-                            $result = mysqli_query($dbId,"SELECT id, setNo, xChecked, fieldType FROM wtl_fields WHERE isSet = '1' AND
-                                setName = '".trim($setName,'#')."'");
-                            $field[] = mysqli_fetch_row($result);
-                        }
-                    }
-                    while( $daten = mysqli_fetch_object($result_view) )
-                    {
-                        $confirmLink = '<http://www.'.str_replace(array('www.','http://'),'',$_SERVER['SERVER_NAME']).
-                            substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'/',1)+1).$GLOBALS['SYSTEM_SETTINGS']['WTL_REGISTER_URL'].
-                            $listID.'&data=confirm&entryToken='.base64_encode($daten->registerId.$daten->entryId).'>';
-                        $fixReplace = array(date('d.m.Y',$daten->tstamp),$daten->firstname,$daten->lastname,date('d.m.Y',$daten->dateOfBirth),
-                            $listName,$dlrgName,date('d.m.Y',$daten->startTstamp),date('d.m.Y',$daten->answerTstamp),
-                            $username,$usermail,$userphone,$confirmLink);
-                        $mailtext = str_replace($PhFix,$fixReplace,$entryMail);
-                        $fc = 0;
-                        while( count($field) > $fc )
-                        {
-                            if( $field[$fc][2] == '1' )
-                            {
-                                if( $field[$fc][3] == 'input' )
-                                {
-                                    $value = $MYSQL[$field[$fc][0]];
-                                }
-                                else
-                                {
-                                    $result = mysqli_query($dbId,"SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
-                                        setNo = '".$field[$fc][1]."' AND data = '".$MYSQL[$field[$fc][0]]."'");
-                                    $label = mysqli_fetch_row($result);
-                                    $value = $label[0];
-                                }
-                            }
-                            else
-                            {
-                                $result = mysqli_query($dbId,"SELECT inputs, selected FROM wtl_members WHERE id = '".$daten->id."'");
-                                $data_m = mysqli_fetch_row($result);
-                                if( $field[$fc][3] == 'input' )
-                                {
-                                    $inputs = parse_inputs($data_m[0]);
-                                    $value = $inputs[$field[$fc][0]];
-                                }
-                                else
-                                {
-                                    $inputs = parse_inputs($data_m[1]);
-                                    $result = mysqli_query($dbId,"SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
-                                        setNo = '".$field[$fc][1]."' AND data = '".$inputs[$field[$fc][0]]."'");
-                                    $label = mysqli_fetch_row($result);
-                                    $value = $label[0];
-                                }
-                            }
-                            $varReplace[] = $value;
-                            $fc++;
-                        }
-                        $mailtext = str_replace($fieldmatches,$varReplace,$mailtext);
-                        send_mail($mailadress,$daten->mail,$dlrgName.' Aufnahme aus der Wartelist '.$listName,$mailtext);
-                    }
+                    // Aufnahmeemail vorbereiten
+                    $sendOK = send_entry_mail($dbId,TRUE,$listID,$MYSQL,$entryMail,$mailadress,$result_view,'Aufnahme aus der Warteliste',$listName,$dlrgName,$username,$usermail,$userphone);
                     if( preg_match('/#BESTAETIGUNGSLINK#/',$entryMail) == 1 )
-                    {
-                        $confirmedLink = '<http://www.'.str_replace(array('www.','http://'),'',$_SERVER['SERVER_NAME']).
+                    { 
+                        // Bestätigungsemail vorbereiten
+                        $feedbackLink = '<https://'.str_replace(array('www.','http://','https://'),'',$_SERVER['SERVER_NAME']).
                             substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'/',1)+1).$GLOBALS['SYSTEM_SETTINGS']['WTL_CONFIRMED_URL'].
                             '&confirmedId='.$_POST['entryId'].'>';
-                        $mailtext = "Hallo ".$username."\n\nMit dem folgenden Link kannst Du die Rückmeldungen Deiner Aufnahme vom ".date('d.m.Y').
-                            " aus der Warteliste ".$listName." einsehen:\n".$confirmedLink."\n\nACHTUNG: Dieser Link funktioniert nur dann korrekt,".
-                            " wenn du NICHT in der Wartelistensystem angemeldet bist!\n\n\n".
-                            "Diese Mail erhältst Du aufgrund einer Aufnahme aus dem Wartelistensystem der ".$dlrgName;
+                        $PhFix = array('#HEUTE#','#LISTENNAME#','#DLRGNAME#','#STARTDATUM#','#ANTWORTDATUM#','#AUFNEHMER#','#RUECKMELDUNGSLINK#');
+                        $fixReplace = array(date('d.m.Y'),$listName,$dlrgName,date('d.m.Y',$daten->startTstamp),date('d.m.Y',$daten->answerTstamp),
+                            $username,$feedbackLink);
+                        $matchcount = preg_match_all('/#\w+#/',$feedbackMail,$matches);
+                        $fieldmatches = array_diff($matches[0],$PhFix);
+                        if( count($fieldmatches) > 0 )
+                        {
+                            $field = array();
+                            foreach( $fieldmatches as $setName )
+                            {
+                                $result = mysqli_query($dbId,"SELECT id, setNo, xChecked, fieldType FROM wtl_fields WHERE isSet = '1' AND
+                                    setName = '".trim($setName,'#')."'");
+                                $field[] = mysqli_fetch_row($result);
+                            }
+                        }
+                        $mailtext = str_replace($PhFix,$fixReplace,$feedbackMail);
+                        $varReplace = findFieldsFromDB($dbId,$field,'NULL',$MYSQL);
+                        $mailtext = str_replace($fieldmatches,$varReplace,$mailtext);
                         send_mail($mailadress,$usermail,$dlrgName.' Deine Aufnahmen aus der Warteliste '.$listName,$mailtext);
                         $headline .= "<p><b>Dir wurde eine Mail zugesandt, mit der Du die Rückmeldungen zu dieser Aufnahme einsehen kannst.</b></p>";
                     }

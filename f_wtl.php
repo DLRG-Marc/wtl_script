@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.7.0
- * @date - time  23.07.2017 - 19:00
+ * @WTL version  1.7.3
+ * @date - time  11.08.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -196,13 +196,13 @@ function send_register_mail($dbId,$memberID,$senderadress,$registerMail,$dlrgNam
     return $retarray;
 }
 
-function send_entry_mail($dbId,$send,$entryMail,$mailadress,$result_view,$subtext,$listName,$dlrgName,$username,$usermail,$userphone)
+function send_entry_mail($dbId,$send,$listID,$MYSQL,$entryMail,$mailadress,$result_view,$subtext,$listName,$dlrgName,$username,$usermail,$userphone)
 {
     $retarray = array();
     $count = 1;
     // email vorbereiten
-    $PhFix = array('#MELDEDATUM#','#VORNAME#','#NACHNAME#','#GEBDATUM#','#LISTENNAME#','#DLRGNAME#', '#MELDENR#',
-        '#STARTDATUM#','#ANTWORTDATUM#','#AUFNEHMER#','#AUFNEHMERMAIL#','#AUFNEHMERTEL#','#BESTAETIGUNGSLINK#');
+    $PhFix = array('#HEUTE#','#MELDEDATUM#','#VORNAME#','#NACHNAME#','#GEBDATUM#','#LISTENNAME#','#DLRGNAME#',
+        '#MELDENR#','#STARTDATUM#','#ANTWORTDATUM#','#AUFNEHMER#','#AUFNEHMERMAIL#','#AUFNEHMERTEL#','#BESTAETIGUNGSLINK#');
     $matchcount = preg_match_all('/#\w+#/',$entryMail,$matches);
     $fieldmatches = array_diff($matches[0],$PhFix);
     if( count($fieldmatches) > 0 )
@@ -217,12 +217,12 @@ function send_entry_mail($dbId,$send,$entryMail,$mailadress,$result_view,$subtex
     }
     while( $daten = mysqli_fetch_object($result_view) )
     {
-        $confirmLink = '<http://www.'.str_replace(array('www.','http://'),'',$_SERVER['SERVER_NAME']).
+        $confirmLink = '<https://'.str_replace(array('www.','http://','https://'),'',$_SERVER['SERVER_NAME']).
             substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'/',1)+1).$GLOBALS['SYSTEM_SETTINGS']['WTL_REGISTER_URL'].
             $listID.'&data=confirm&entryToken='.base64_encode($daten->registerId.$daten->entryId).'>';
-        $fixReplace = array(date('d.m.Y',$daten->tstamp),$daten->firstname,$daten->lastname,date('d.m.Y',$daten->dateOfBirth),
-            $listName,$dlrgName,$daten->registerId,date('d.m.Y',$daten->startTstamp),date('d.m.Y',$daten->answerTstamp),
-            $username,$usermail,$userphone,$confirmLink);
+        $fixReplace = array(date('d.m.Y'),date('d.m.Y',$daten->tstamp),$daten->firstname,$daten->lastname,
+            date('d.m.Y',$daten->dateOfBirth),$listName,$dlrgName,$daten->registerId,date('d.m.Y',$daten->startTstamp),
+            date('d.m.Y',$daten->answerTstamp),$username,$usermail,$userphone,$confirmLink);
         $mailtext = str_replace($PhFix,$fixReplace,$entryMail);
         $fc = 0;
         while( count($field) > $fc )

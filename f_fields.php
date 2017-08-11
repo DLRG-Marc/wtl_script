@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.7.0
- * @date - time  23.07.2017 - 19:00
+ * @WTL version  1.7.3
+ * @date - time  11.08.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -192,5 +192,55 @@ function inputfielddata_to_inputfields($fielddata,$dataarray)
         $dataarray[substr(trim($value,'#'),'0',strpos(trim($value,'#'),';'))] = ltrim(strstr(trim($value,'#'),';'),';');
     }
     return $dataarray;
+}
+
+//@$fieldarry array
+//@$id sring
+//@$MYSQL string
+//@return array
+function findFieldsFromDB($dbId,$fieldarry,$id,$MYSQL)
+{
+    $fc = 0;
+    while( count($fieldarry) > $fc )
+    {
+        if( $fieldarry[$fc][2] == '1' )
+        {
+            if( $fieldarry[$fc][3] == 'input' )
+            {
+                $value = $MYSQL[$fieldarry[$fc][0]];
+            }
+            else
+            {
+                $result = mysqli_query($dbId,"SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
+                    setNo = '".$fieldarry[$fc][1]."' AND data = '".$MYSQL[$fieldarry[$fc][0]]."'");
+                $label = mysqli_fetch_row($result);
+                $value = $label[0];
+            }
+        }
+        if( $id != 'NULL' )
+        {
+            if( $fieldarry[$fc][2] != '1' )
+            {
+                $result = mysqli_query($dbId,"SELECT inputs, selected FROM wtl_members WHERE id = '".$id."'");
+                $data_m = mysqli_fetch_row($result);
+                if( $fieldarry[$fc][3] == 'input' )
+                {
+                    $inputs = parse_inputs($data_m[0]);
+                    $value = $inputs[$fieldarry[$fc][0]];
+                }
+                else
+                {
+                    $inputs = parse_inputs($data_m[1]);
+                    $result = mysqli_query($dbId,"SELECT dataLabel FROM wtl_fields WHERE isSet != '1' AND
+                        setNo = '".$fieldarry[$fc][1]."' AND data = '".$inputs[$fieldarry[$fc][0]]."'");
+                    $label = mysqli_fetch_row($result);
+                    $value = $label[0];
+                }
+            }
+        }
+        $var[] = $value;
+        $fc++;
+    }
+    return $var;
 }
 ?>

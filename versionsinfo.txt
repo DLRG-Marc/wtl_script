@@ -2,6 +2,12 @@
 Revisions of Automatic Waitinglist
 =======================================
 
+version 1.7.3 (2017-08-11)
+---------------------------------------
+- change watingstatus view as value or girder
+- fix some bugs
+- function 17 and 18 added
+
 version 1.7.2 (2017-08-07)
 ---------------------------------------
 - fix error in f_global.php

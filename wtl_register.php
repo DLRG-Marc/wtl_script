@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.7.0
- * @date - time  23.07.2017 - 19:00
+ * @WTL version  1.7.3
+ * @date - time  11.08.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -230,7 +230,7 @@
                 $sendOK = send_register_mail($dbId,$memberID,$mailadress,$registerMail,$dlrgName,$listName);
                 // Erfolgsmeldung
                 $displayMessage = TRUE;
-                $message = "<p><b>Du hast Dich erfolgreich in die Warteliste ".$listName." eingetragen !</b></p>
+                $message = "<p><b>Du hast Dich erfolgreich in die Warteliste der ".$listName." eingetragen !</b></p>
                     <p>Eine e-mail mit Deiner Anmeldenummer wurde an die angegebene Adresse versandt.<br/>
                     Solltest Du innerhalb von 24h keine e-mail erhalten haben, wende Dich bitte an das
                     <a href='mailto:".$mailadress."'>Aufnahmeteam ".$listName."</a>.</p>

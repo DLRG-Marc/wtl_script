@@ -90,6 +90,7 @@ CREATE TABLE IF NOT EXISTS `wtl_lists` (
   `entryLimit` int(10) unsigned NOT NULL DEFAULT '20',
   `connectFields` text NOT NULL,
   `infoMail` mediumtext NOT NULL,
+  `feedbackMail` mediumtext NOT NULL,
   `viewRegister` text NOT NULL,
   `viewEntry` text NOT NULL,
   `viewStatistic` text NOT NULL,
