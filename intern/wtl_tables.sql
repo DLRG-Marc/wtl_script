@@ -13,8 +13,8 @@
 /* General Public License for more details */
 /* at <http://www.gnu.org/licenses/>. */
 /**/
-/* @WTL version  1.6.0 */
-/* @date - time  15.03.2015 - 19:00 */
+/* @WTL version  1.7.4 */
+/* @date - time  08.09.2017 - 19:00 */
 /* @copyright    Marc Busse 2012-2020 */
 /* @author       Marc Busse <http://www.eutin.dlrg.de> */
 /* @license      GPL */
@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS `wtl_members` (
   `confirmTstamp` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `registerId` (`registerId`),
-  UNIQUE KEY `person` (`listId`,`firstname`,`lastname`,`dateOfBirth`,`deleted`)
+  UNIQUE KEY `person` (`listId`,`firstname`,`lastname`,`dateOfBirth`,`deleted`,`entryId`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------

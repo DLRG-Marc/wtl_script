@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.7.3
- * @date - time  11.08.2017 - 19:00
+ * @WTL version  1.7.4
+ * @date - time  08.09.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -261,9 +261,9 @@
                     if( preg_match('/#BESTAETIGUNGSLINK#/',$entryMail) == 1 )
                     { 
                         // Bestätigungsemail vorbereiten
-                        $feedbackLink = '<https://'.str_replace(array('www.','http://','https://'),'',$_SERVER['SERVER_NAME']).
+                        $feedbackLink = 'https://'.str_replace(array('www.','http://','https://'),'',$_SERVER['SERVER_NAME']).
                             substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'/',1)+1).$GLOBALS['SYSTEM_SETTINGS']['WTL_CONFIRMED_URL'].
-                            '&confirmedId='.$_POST['entryId'].'>';
+                            '&confirmedId='.$_POST['entryId'];
                         $PhFix = array('#HEUTE#','#LISTENNAME#','#DLRGNAME#','#STARTDATUM#','#ANTWORTDATUM#','#AUFNEHMER#','#RUECKMELDUNGSLINK#');
                         $fixReplace = array(date('d.m.Y'),$listName,$dlrgName,date('d.m.Y',$daten->startTstamp),date('d.m.Y',$daten->answerTstamp),
                             $username,$feedbackLink);

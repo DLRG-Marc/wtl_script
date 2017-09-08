@@ -2,6 +2,10 @@
 Revisions of Automatic Waitinglist
 =======================================
 
+version 1.7.4 (2017-09-08)
+---------------------------------------
+- fix some bugs
+
 version 1.7.3 (2017-08-11)
 ---------------------------------------
 - change watingstatus view as value or girder

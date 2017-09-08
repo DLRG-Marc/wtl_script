@@ -13,8 +13,8 @@
 /* General Public License for more details */
 /* at <http://www.gnu.org/licenses/>. */
 /**/
-/* @WTL version  1.7.3 */
-/* @date - time  11.08.2017 - 19:00 */
+/* @WTL version  1.7.4 */
+/* @date - time  08.09.2017 - 19:00 */
 /* @copyright    Marc Busse 2012-2020 */
 /* @author       Marc Busse <http://www.eutin.dlrg.de> */
 /* @license      GPL */
@@ -30,4 +30,9 @@ UPDATE_END;
 UPDATE_V173;
 ALTER TABLE `wtl_lists` ADD `infoMail` mediumtext NOT NULL;
 ALTER TABLE `wtl_lists` ADD `feedbackMail` mediumtext NOT NULL;
+UPDATE_END;
+
+/* Version 1.7.4 update */
+UPDATE_V174;
+ALTER TABLE `wtl_members` DROP INDEX `person`, ADD UNIQUE `person` (`listId`, `firstname`, `lastname`, `dateOfBirth`, `deleted`, `entryId`) USING BTREE;
 UPDATE_END;

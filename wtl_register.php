@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.7.3
- * @date - time  11.08.2017 - 19:00
+ * @WTL version  1.7.4
+ * @date - time  31.08.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -215,15 +215,15 @@
             $SQL_Befehl_Write = "INSERT INTO wtl_members SET tstamp = '".$tstamp."', listId = '".$listID."', registerId ='".$registerId."',
                 firstname = '".$firstname."', lastname = '".$lastname."', dateOfBirth = '".$dateOfBirth."', mail = '".$MYSQL['mail']."',
                 inputs = '".$inputs."', selected = '".$selects."', lastEditor = '".$username."'";
-            // Prüfen, ob Eintrag schon vorhanden ist
             $result = mysqli_query($dbId,$SQL_Befehl_Write);
-            if( !$result && (mysqli_errno() == 1062) )
+            // Prüfen, ob Eintrag schon vorhanden ist
+            if( !$result && (mysqli_errno($dbId) == 1062) )
             {
                 $displayMessage = TRUE;
                 $message = "<p><b>Deine Daten wurden bereits eingetragen !</b><br/>Ein 2. Eintrag ist nicht möglich !<br/><br/>
                    <a href='".htmlspecialchars($_SERVER['REQUEST_URI'])."'>Eine weitere Anmeldung vornehmen.</a></p>";
             }
-            if( mysqli_affected_rows($dbId) == 1)
+            elseif( mysqli_affected_rows($dbId) == 1)
             {
                 // neu
                 $memberID = mysqli_insert_id($dbId);

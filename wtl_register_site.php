@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.7.3
- * @date - time  11.08.2017 - 19:00
+ * @WTL version  1.7.4
+ * @date - time  31.08.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -122,7 +122,7 @@
                     </tr>
                 ";
             }
-            if( ($registerId_OK === TRUE) && ($girder == '1') )
+            if( ($registerId_OK === TRUE) && ($girder == '1') && (!empty($waitingPos)) )
             {
                 echo "
                     <tr>
@@ -132,7 +132,7 @@
                     </tr>
                 ";
             }
-            if( ($registerId_OK === TRUE) && ($girder != '1') )
+            if( ($registerId_OK === TRUE) && ($girder != '1') && (!empty($waitingPos)) )
             {
                 echo "
                     <tr>

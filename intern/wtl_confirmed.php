@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.7.0
- * @date - time  23.07.2017 - 19:00
+ * @WTL version  1.7.4
+ * @date - time  08.09.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -35,47 +35,48 @@
         $script_url = substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'&'));
     }
 
+    // Functions
+    function confirmed($conf,$confirmedId,$dbId)
+    {
+        $result = mysqli_query($dbId,"SELECT * FROM wtl_members WHERE entryId = '".$confirmedId."'
+            AND deleted != '1' AND confirm = '".$conf."' ORDER by confirmTstamp DESC");
+        $quantity = mysqli_num_rows($result);
+        if( (number_to_janein($conf) == '-') || !(number_to_janein($conf)) )
+        {
+            $text = "nicht";
+        }
+        else
+        {
+            $text = "mit ".number_to_janein($conf);
+        }
+        if( $quantity == 1)
+        {
+            $headline = "<p><b>Die folgende ".$quantity." Person hat ".$text." geantwortet:</b></p>";
+        }
+        else
+        {
+            $headline = "<p><b>Die folgenden ".$quantity." Personen haben ".$text." geantwortet:</b></p>";
+        }
+        // Seitenaufbau aufrufen
+        wtl_make_site_confirmed($conf,$result,$quantity,$headline,'');
+        $conf--;
+        if( $conf >= 0 )
+        {
+            confirmed($conf,$confirmedId,$dbId);
+        }
+    }
+
     echo "<div id='wtl_confirmed'>
           <div class='waitinglist'>";
     // nach erfolgter Auswahl
     echo "<h1>Rückmeldungen Deiner getätigten Aufnahme</h1>";
     if( $confirmedId != '' )
     {
-        function confirmed($conf,$confirmedId,$dbId)
-        {
-            $result = mysqli_query($dbId,"SELECT * FROM wtl_members WHERE entryId = '".$confirmedId."'
-                AND deleted != '1' AND confirm = '".$conf."' ORDER by confirmTstamp DESC");
-            $quantity = mysqli_num_rows($result);
-            if( (number_to_janein($conf) == '-') || !(number_to_janein($conf)) )
-            {
-                $text = "nicht";
-            }
-            else
-            {
-                $text = "mit ".number_to_janein($conf);
-            }
-            if( $quantity == 1)
-            {
-                $headline = "<p><b>Die folgende ".$quantity." Person hat ".$text." geantwortet:</b></p>";
-            }
-            else
-            {
-                $headline = "<p><b>Die folgenden ".$quantity." Personen haben ".$text." geantwortet:</b></p>";
-            }
-            // Seitenaufbau aufrufen
-            wtl_make_site_confirmed($conf,$result,$quantity,$headline,'');
-            $conf--;
-            if( $conf >= 0 )
-            {
-                confirmed($conf,$confirmedId,$dbId);
-            }
-        }
         confirmed(2,$confirmedId,$dbId);
     }
     else
     {
-        echo "<h1>Rückmeldungen Deiner getätigten Aufnahme</h1>
-            <p><b>Du hast keine Berechtigung zum ansehen dieser Rückmeldungen!</b></p>";
+        echo "<p><b>Du hast keine Berechtigung zum ansehen dieser Rückmeldungen!</b></p>";
     }
     echo "</div></div>";
 ?>

@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.7.0
- * @date - time  23.07.2017 - 19:00
+ * @WTL version  1.7.4
+ * @date - time  31.08.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -305,7 +305,7 @@ function mysqlTableUpdateByCsvFile($dbId,$fileOnServer,$sqlTable,$sqlCondition,$
     }
     else
     {
-        $message = "<p><b>Aktualisierung der Tabelle in der Datenbank fehlgeschlagen !<br/>Grund: ".mysqli_error()."</b></p>";
+        $message = "<p><b>Aktualisierung der Tabelle in der Datenbank fehlgeschlagen !<br/>Grund: ".mysqli_error($dbId)."</b></p>";
     }
     return $message;
 }

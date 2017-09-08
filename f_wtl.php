@@ -15,8 +15,8 @@
  * General Public License for more details
  * at <http://www.gnu.org/licenses/>. 
  *
- * @WTL version  1.7.3
- * @date - time  11.08.2017 - 19:00
+ * @WTL version  1.7.4
+ * @date - time  08.09.2017 - 19:00
  * @copyright    Marc Busse 2012-2020
  * @author       Marc Busse <http://www.eutin.dlrg.de>
  * @license      GPL
@@ -217,9 +217,9 @@ function send_entry_mail($dbId,$send,$listID,$MYSQL,$entryMail,$mailadress,$resu
     }
     while( $daten = mysqli_fetch_object($result_view) )
     {
-        $confirmLink = '<https://'.str_replace(array('www.','http://','https://'),'',$_SERVER['SERVER_NAME']).
+        $confirmLink = 'https://'.str_replace(array('www.','http://','https://'),'',$_SERVER['SERVER_NAME']).
             substr($_SERVER['REQUEST_URI'],0,strpos($_SERVER['REQUEST_URI'],'/',1)+1).$GLOBALS['SYSTEM_SETTINGS']['WTL_REGISTER_URL'].
-            $listID.'&data=confirm&entryToken='.base64_encode($daten->registerId.$daten->entryId).'>';
+            $listID.'&data=confirm&entryToken='.base64_encode($daten->registerId.$daten->entryId);
         $fixReplace = array(date('d.m.Y'),date('d.m.Y',$daten->tstamp),$daten->firstname,$daten->lastname,
             date('d.m.Y',$daten->dateOfBirth),$listName,$dlrgName,$daten->registerId,date('d.m.Y',$daten->startTstamp),
             date('d.m.Y',$daten->answerTstamp),$username,$usermail,$userphone,$confirmLink);
